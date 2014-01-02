@@ -1,4 +1,4 @@
-#include "paser.hpp"
+#include "parser.hpp"
 
 
 template <typename itrT>
@@ -16,10 +16,11 @@ Grammar:Grammer::base_type(op2) {
 	];
 	ltr = dec_ltr;
 	
-	ltr % "**" % (lit('*') | '/' | '%') | ()
+	ltr % "**" % (lit('*') | '/' | '%') | (lit('+') | '-');
 
-		};
+};
 
-			qi::rule<itrT> dec_ltr, ltr, op1, op2;
+	qi::rule<itrT> dec_ltr, ltr, op1, op2;
+	std::stack<
 };
 

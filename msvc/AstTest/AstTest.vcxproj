@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CFFE4653-417F-4842-A28A-374D9E373EC0}</ProjectGuid>
-    <RootNamespace>ParserTest</RootNamespace>
+    <ProjectGuid>{58D2937A-F4F3-41F2-96E4-E19725F9074C}</ProjectGuid>
+    <RootNamespace>AstTest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,7 +44,6 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -65,11 +64,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Parser\parser.cpp" />
-    <ClCompile Include="..\..\test\parser\ParserTest.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\Parser\parser.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
