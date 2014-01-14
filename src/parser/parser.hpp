@@ -10,7 +10,6 @@ namespace ALSL{
 namespace qi = boost::spirit::qi;
 namespace ascii = qi::ascii;
 
-boost::variant<int, float, double,
 
 template <typename itrT>
 struct Grammar : qi::grammar<itrT, ascii::space_type> {
