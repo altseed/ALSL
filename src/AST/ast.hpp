@@ -30,19 +30,27 @@ namespace ALSL{
 		opDiv,
 		opMod
 	};
-	static const auto tokens2Str[]  = { "none", "intLit", "floatLit", "opPlus" };
+	namespace Internal{
+	static const std::string tokens2Str[] = { "none", "intLit", "floatLit", "opPlus", "opMinus", "opMult", "opDiv", "opMod" };
+
+	}
+
 	struct Node: public Printable {
+
+	public:
 		bool isConst = false;
-		Tokens tokens = Tokens::none;
+		Tokens token = Tokens::none;
 		std::list<NodeContent> contents;
 
-		Node(bool isConst_, Tokens tokens_) : isConst(isConst_), tokens(tokens_){}
+		Node(bool isConst_, Tokens token_) : isConst(isConst_), token(token_){}
 
 		void print(std::ostream& os) override{
 			os << std::boolalpha <<
-				"\"Node\": { \"isConst\": " <<
+				"{\"Node\": {\"isConst\": " <<
 				isConst <<
-				", \"contents\": [";
+				", \"token\": \"" <<
+				Internal::tokens2Str[(int)token] <<
+				"\", \"contents\": [";
 			for (auto& e : contents){
 				bool isFirst = true;
 				if (isFirst){ isFirst = false; }
@@ -50,10 +58,10 @@ namespace ALSL{
 				if (e.which() == NodeContentTypes::NextNode) { (*boost::get<std::shared_ptr<Node>>(e)).print(os); }
 				else { os << e; }
 			}
-			os << "]}";
+			os << "]}}";
 		}
 
-		std::shared_ptr<Node> getPtr() const{ return std::shared_ptr<Node>(this); }
+		std::shared_ptr<Node> getPtr() { return std::shared_ptr<Node>(this); }
 
 	};
 
@@ -63,3 +71,4 @@ std::ostream& operator<<(std::ostream& os, ALSL::Printable& self) {
 	self.print(os);
 	return os;
 }
+

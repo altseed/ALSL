@@ -1,14 +1,29 @@
 #define _VARIADIC_MAX  10
 
 #include<gtest/gtest.h>
+#include<string>
 #include "../../src/parser/parser.hpp"
 #pragma comment( lib, "gtestd.lib" )
 #pragma comment( lib, "gtest_maind.lib" )
 TEST(ParserTest, ParserTestMain){
-	ASSERT_EQ(1, 1);
+	ALSL::Grammar<std::string::iterator> grammar;
+	std::string src = "1 + 1";
+
+	auto itr = src.begin();
+	bool res = boost::spirit::qi::phrase_parse(itr, src.end(), grammar, boost::spirit::ascii::space);
+	EXPECT_NE(grammar.stk.size(), 0);
+	for (auto e : grammar.stk){
+		std::cout << *e << std::endl;
+	}
+
+	EXPECT_TRUE(res);
+	EXPECT_EQ(itr, src.end());
 
 }
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	auto ret = RUN_ALL_TESTS();
+	char c;
+	std::cin >> c;
+	return ret;
 }
