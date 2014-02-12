@@ -7,12 +7,12 @@
 #pragma comment( lib, "gtest_maind.lib" )
 TEST(ParserTest, ParserTestMain){
 	ALSL::Grammar<std::string::iterator> grammar;
-	std::string src = "1 + 1";
+	std::string src = "(42 + 1 +) * 31337 + 3 / 4";
 
 	auto itr = src.begin();
 	bool res = boost::spirit::qi::phrase_parse(itr, src.end(), grammar, boost::spirit::ascii::space);
-	EXPECT_NE(grammar.stk.size(), 0);
-	for (auto e : grammar.stk){
+	EXPECT_NE(grammar.nodeStk.size(), 0);
+	for (auto e : grammar.nodeStk){
 		std::cout << *e << std::endl;
 	}
 

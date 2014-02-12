@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 #include <list>
+#include <string>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
 
@@ -13,25 +14,85 @@ namespace ALSL{
 		virtual void print(std::ostream&) = 0;
 	};
 	struct Node;
-	typedef boost::variant<std::shared_ptr<Node>, int, float, double> NodeContent;
+	typedef boost::variant<std::shared_ptr<Node>, int, float, double, std::string> NodeContent;
 	namespace NodeContentTypes{
 		int const NextNode = 0;
 		int const Int = NextNode + 1;
 		int const Float = Int + 1;
 		int const Double = Float + 1;
+		int const Identifier = Double + 1;
 	}
 	enum class Tokens{
 		none,
 		intLit,
 		floatLit,
-		opPlus,
-		opMinus,
-		opMult,
-		opDiv,
-		opMod
+		identif,
+
+		call, // function call (exp funcName, exp arg, exp arg,...)
+		arrayMember, // [] (exp arrayName, exp index)
+		swizzleOp, // swizzle operation  (exp dataName, identif swizzle)
+		dataMember, // . (exp dataName, identif memberName)
+
+		// arithm, bitwise and logical operators
+		opPos, // unary + (exp opd) 
+		opNeg, // unary - (exp opd)
+		opInv, // ~ (exp opd)
+		opNot, // ! (exp opd)
+		
+		opMult, // * (exp opd1, exp opd2)
+		opDiv, // / (exp opd1, exp opd2)
+		opMod, // %
+
+		opAdd, // +
+		opSub, // -
+
+		opLsh, // <<
+		opRsh, // >>
+
+		opGt, // >
+		opLt, // <
+		opGte, // >=
+		opLte, // <=
+
+		opEq, // ==
+		opNeq, // !=
+
+		opBitAnd, // &
+
+		opBitXor, // ^
+
+		opBitOr, // |
+
+		opLogicAnd, // &&
+		opLogicOr, // ||
+
+		opSelect, // ?:
+
+		opAssign, // =
+		opAddAsign, // +=
+		opSubAssign, // -=
+		opMultAssign, // *=
+		opDivAssign, // /=
+		opModAssign, // %=
+		opLshAssign, // <<=
+		opRshAssigh, // >>=
+		opBitAndAssign, // &=
+		opBitOrAssign, // |=
+		opBitXorAssign, // ^=
+
+		opSeq, // ,
+
+		seq, // ;
+
+		stxIf, // if
+		stxWhile, // while
+		stxFor, // for
+		stxDoWhile, // do-while
+		stxFunc, // function declaration
+
 	};
 	namespace Internal{
-	static const std::string tokens2Str[] = { "none", "intLit", "floatLit", "opPlus", "opMinus", "opMult", "opDiv", "opMod" };
+		static const std::string tokens2Str[] = { "none", "intLit", "floatLit", "identif", "call", "arrayMember", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAsign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssigh", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc" };
 
 	}
 
