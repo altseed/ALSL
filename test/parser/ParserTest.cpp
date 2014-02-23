@@ -6,18 +6,30 @@
 #pragma comment( lib, "gtestd.lib" )
 #pragma comment( lib, "gtest_maind.lib" )
 TEST(ParserTest, ParserTestMain){
-	ALSL::Grammar<std::string::iterator> grammar;
-	std::string src = "(42 + 1 +) * 31337 + 3 / 4";
+	ALSL::Grammar<boost::spirit::line_pos_iterator<std::string::iterator>> grammar;
+	ALSL::Skipper< boost::spirit::line_pos_iterator<std::string::iterator>> skipper;
+	std::string src =
+		R"(
+/*
 
-	auto itr = src.begin();
-	bool res = boost::spirit::qi::phrase_parse(itr, src.end(), grammar, boost::spirit::ascii::space);
+aaaa
+/*bbbb*/
+
+*/
+1
+)";
+
+	auto itr = boost::spirit::line_pos_iterator<std::string::iterator>(src.begin());
+	
+	auto const end = boost::spirit::line_pos_iterator<std::string::iterator>(src.end());
+	bool res = boost::spirit::qi::phrase_parse(itr, end, grammar, skipper);
 	EXPECT_NE(grammar.nodeStk.size(), 0);
 	for (auto e : grammar.nodeStk){
 		std::cout << *e << std::endl;
 	}
 
 	EXPECT_TRUE(res);
-	EXPECT_EQ(itr, src.end());
+	EXPECT_EQ(itr, end);
 
 }
 int main(int argc, char **argv) {

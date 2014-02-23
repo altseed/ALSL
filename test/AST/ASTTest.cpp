@@ -5,7 +5,7 @@
 #pragma comment( lib, "gtestd.lib" )
 #pragma comment( lib, "gtest_maind.lib" )
 TEST(ASTTest, ASTTestMain){
-	auto op = std::make_shared<ALSL::Node>(false, ALSL::Tokens::opPlus);
+	auto op = std::make_shared<ALSL::Node>(false, ALSL::Tokens::opAdd);
 	auto e1 = std::make_shared<ALSL::Node>(true, ALSL::Tokens::intLit);
 	auto e2 = std::make_shared<ALSL::Node>(true, ALSL::Tokens::intLit);
 	e1->contents.emplace_back(42);

@@ -11,7 +11,17 @@ namespace ALSL{
 	// todo: helperånÇ™ó≠Ç‹Ç¡ÇΩÇÁèWÇﬂÇƒëºÇÃÉwÉbÉ_Ç…à⁄Ç∑
 	class Printable{
 	public:
+		static int& getIndent(){ static int i; return i; }
+		static void incIndent(){ getIndent()++; }
+		static void decIndent(){ getIndent()--; }
+		static void initIndent(){ getIndent() = 0; }
 		virtual void print(std::ostream&) = 0;
+		void printIndent(std::ostream& os) {
+			const int ind = getIndent();
+			for (int i = 0; i < ind; i++) {
+				os << "    ";
+			}
+		}
 	};
 	struct Node;
 	typedef boost::variant<std::shared_ptr<Node>, int, float, double, std::string> NodeContent;
@@ -26,10 +36,11 @@ namespace ALSL{
 		none,
 		intLit,
 		floatLit,
+		doubleLit,
 		identif,
 
 		call, // function call (exp funcName, exp arg, exp arg,...)
-		arrayMember, // [] (exp arrayName, exp index)
+		arraySubscript, // [] (exp arrayName, exp index)
 		swizzleOp, // swizzle operation  (exp dataName, identif swizzle)
 		dataMember, // . (exp dataName, identif memberName)
 
@@ -69,13 +80,13 @@ namespace ALSL{
 		opSelect, // ?:
 
 		opAssign, // =
-		opAddAsign, // +=
+		opAddAssign, // +=
 		opSubAssign, // -=
 		opMultAssign, // *=
 		opDivAssign, // /=
 		opModAssign, // %=
 		opLshAssign, // <<=
-		opRshAssigh, // >>=
+		opRshAssign, // >>=
 		opBitAndAssign, // &=
 		opBitOrAssign, // |=
 		opBitXorAssign, // ^=
@@ -92,11 +103,12 @@ namespace ALSL{
 
 	};
 	namespace Internal{
-		static const std::string tokens2Str[] = { "none", "intLit", "floatLit", "identif", "call", "arrayMember", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAsign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssigh", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc" };
+		static const std::string tokens2Str[] = { "none", "intLit", "floatLit", "doubleLit", "identif", "call", "arraySubscript", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAssign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssign", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc" };
 
 	}
 
 	struct Node: public Printable {
+	protected:
 
 	public:
 		bool isConst = false;
@@ -106,20 +118,38 @@ namespace ALSL{
 		Node(bool isConst_, Tokens token_) : isConst(isConst_), token(token_){}
 
 		void print(std::ostream& os) override{
-			os << std::boolalpha <<
-				"{\"Node\": {\"isConst\": " <<
-				isConst <<
-				", \"token\": \"" <<
-				Internal::tokens2Str[(int)token] <<
-				"\", \"contents\": [";
+			os << std::boolalpha;
+			os << "{\n";
+			incIndent();
+			printIndent(os);
+			os << "\"Node\": {\n";
+			incIndent();
+			printIndent(os);
+			os << "\"isConst\": " << isConst << ",\n";
+			printIndent(os);
+			os << "\"token\": \"" << Internal::tokens2Str[(int) token] << "\",\n";
+			printIndent(os);
+			os << "\"contents\": [\n";
+			incIndent();
+			bool isFirst = true;
 			for (auto& e : contents){
-				bool isFirst = true;
 				if (isFirst){ isFirst = false; }
-				else { os << ", "; }
+				else { printIndent(os); os << ", // " << Internal::tokens2Str[(int) token] << "\n"; }
+				printIndent(os);
 				if (e.which() == NodeContentTypes::NextNode) { (*boost::get<std::shared_ptr<Node>>(e)).print(os); }
+				else if (e.which() == NodeContentTypes::Identifier) { os << "\"" << e << "\"";}
 				else { os << e; }
 			}
-			os << "]}}";
+			os << "\n";
+			decIndent();
+			printIndent(os);
+			os << "]\n";
+			decIndent();
+			printIndent(os);
+			os << "} // " << Internal::tokens2Str[(int) token] << "\n";
+			decIndent();
+			printIndent(os);
+			os << "}\n";
 		}
 
 		std::shared_ptr<Node> getPtr() { return std::shared_ptr<Node>(this); }
