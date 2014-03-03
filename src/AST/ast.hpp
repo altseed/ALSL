@@ -115,8 +115,19 @@ namespace ALSL{
 		Tokens token = Tokens::none;
 		std::list<NodeContent> contents;
 
-		Node(bool isConst_, Tokens token_) : isConst(isConst_), token(token_){}
+		Node(bool const isConst_, Tokens const token_) : isConst(isConst_), token(token_){}
 
+		static void makeNodeImpl(std::shared_ptr<Node>){}
+
+		template<typename T, typename... Args> static void makeNodeImpl(std::shared_ptr<Node> node, T const t, Args const... args) {
+			node->contents.push_back(t);
+			makeNodeImpl(node, args...);
+		}
+		template<typename... Args> static std::shared_ptr<Node> makeNode(bool const isConst_, Tokens const token_, Args const... args) {
+			auto node = std::make_shared<Node>(isConst_, token_);
+			makeNodeImpl(node, args...);
+			return node;
+		}
 		void print(std::ostream& os) override{
 			os << std::boolalpha;
 			os << "{\n";
@@ -155,6 +166,8 @@ namespace ALSL{
 		std::shared_ptr<Node> getPtr() { return std::shared_ptr<Node>(this); }
 
 	};
+
+	typedef std::shared_ptr<Node> SpNode;
 
 }
 

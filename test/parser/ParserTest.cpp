@@ -8,6 +8,7 @@
 TEST(ParserTest, ParserTestMain){
 	ALSL::Grammar<boost::spirit::line_pos_iterator<std::string::iterator>> grammar;
 	ALSL::Skipper< boost::spirit::line_pos_iterator<std::string::iterator>> skipper;
+	std::shared_ptr<ALSL::Node> result;
 	std::string src =
 		R"(
 /*
@@ -16,17 +17,14 @@ aaaa
 /*bbbb*/
 
 */
-1
+aaa(1)
 )";
 
 	auto itr = boost::spirit::line_pos_iterator<std::string::iterator>(src.begin());
 	
 	auto const end = boost::spirit::line_pos_iterator<std::string::iterator>(src.end());
-	bool res = boost::spirit::qi::phrase_parse(itr, end, grammar, skipper);
-	EXPECT_NE(grammar.nodeStk.size(), 0);
-	for (auto e : grammar.nodeStk){
-		std::cout << *e << std::endl;
-	}
+	bool res = boost::spirit::qi::phrase_parse(itr, end, grammar, skipper, result);
+	std::cout << *result << std::endl;
 
 	EXPECT_TRUE(res);
 	EXPECT_EQ(itr, end);
