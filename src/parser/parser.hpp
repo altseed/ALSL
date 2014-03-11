@@ -92,7 +92,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 	}
 
 	template<typename localT = qi::unused_type, typename attrT = SpNode()> using rule = qi::rule<itrT, attrT, skpT, localT>;
-	rule<> intLtr, floatLit, doubleLit, ltr, lhs, expr, functionCall, sentence, identif, entry;
+	rule<> intLtr, floatLit, doubleLit, ltr, lhs, expr, functionCall, sentence, identif, entry, ifStc, whileStc;
 	rule<qi::locals<Tokens>> opUnary, opMulDiv, opAddSub, opBitShift, opLtGt, opEqNeq, opBitAnd, opBitXor, opBitOr, opLogicAnd, opLogicOr, opSelectSub, opAssign, opSeq;
 	rule<qi::locals<SpNode, SpNode>> block;
 
@@ -295,6 +295,9 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 				)
 			)
 		);
+
+		ifStc.name("if");
+		ifStc = lit("if") > lit('(') > expr > lit(')') > (sentence | block) > -(lit("else") > (sentence | block));
 		entry %= sentence | block;
 		
 	}
