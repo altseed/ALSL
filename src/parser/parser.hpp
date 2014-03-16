@@ -71,6 +71,7 @@ struct lzMakeNodeImpl {
 };
 boost::phoenix::function<lzMakeNodeImpl> lzMakeNode;
 
+
 template <typename itrT>
 struct Skipper : qi::grammar<itrT> {
 	qi::rule<itrT> entry, comment, multiLineComment, singleLineComment;
@@ -92,12 +93,12 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 	}
 
 	template<typename localT = qi::unused_type, typename attrT = SpNode()> using rule = qi::rule<itrT, attrT, skpT, localT>;
-	rule<> intLtr, floatLit, doubleLit, ltr, lhs, expr, functionCall, sentence, identif, entry, ifStc, whileStc;
+	rule<> intLtr, floatLit, doubleLit, ltr, lhs, expr, functionCall, sentence, identif, entry, stxIf, stxWhile, stxFor, stxDoWhile;
 	rule<qi::locals<Tokens>> opUnary, opMulDiv, opAddSub, opBitShift, opLtGt, opEqNeq, opBitAnd, opBitXor, opBitOr, opLogicAnd, opLogicOr, opSelectSub, opAssign, opSeq;
 	rule<qi::locals<SpNode, SpNode>> block;
 
 	Grammar(): Grammar::base_type(entry) {
-		using qi::lit; using qi::labels::_val; using namespace qi::labels;
+		using qi::lit; using qi::labels::_val; using qi::eps; using namespace qi::labels;
 		using boost::phoenix::val;
 
 		intLtr.name("Integer Literal");
@@ -235,19 +236,22 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 
 		opAssign.name("assign operators");
-		opAssign = (*(lhs[_val = _1] >> (
-					lit('=')[_a = Tokens::opAssign] |
-					lit("*=")[_a = Tokens::opMultAssign] |
-					lit("/=")[_a = Tokens::opDivAssign] |
-					lit("%=")[_a = Tokens::opModAssign] |
-					lit("+=")[_a = Tokens::opAddAssign] |
-					lit("-=")[_a = Tokens::opSubAssign] |
-					lit("<<=")[_a = Tokens::opLshAssign] |
-					lit(">>=")[_a = Tokens::opRshAssign] |
-					lit("&=")[_a = Tokens::opBitAndAssign] |
-					lit("^=")[_a = Tokens::opBitXorAssign] |
-					lit("|=")[_a = Tokens::opBitOrAssign]
-					) ) )|
+		opAssign = (
+						lhs[_val = _1] >> (
+							lit('=')[_a = Tokens::opAssign] |
+							lit("*=")[_a = Tokens::opMultAssign] |
+							lit("/=")[_a = Tokens::opDivAssign] |
+							lit("%=")[_a = Tokens::opModAssign] |
+							lit("+=")[_a = Tokens::opAddAssign] |
+							lit("-=")[_a = Tokens::opSubAssign] |
+							lit("<<=")[_a = Tokens::opLshAssign] |
+							lit(">>=")[_a = Tokens::opRshAssign] |
+							lit("&=")[_a = Tokens::opBitAndAssign] |
+							lit("^=")[_a = Tokens::opBitXorAssign] |
+							lit("|=")[_a = Tokens::opBitOrAssign]
+						) >
+						opAssign[_val = lzMakeNode(_a, _val, _1)]
+					) |
 					opLogicOr[_val = _1];
 
 		opSeq.name("sequence operator");
@@ -270,7 +274,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 
 		sentence.name("sentence");
-		sentence %= expr > lit(';');
+		sentence %= stxIf | stxWhile | stxFor | (expr > lit(';'));
 		qi::on_error<qi::fail>(
 			sentence,
 			[this](boost::fusion::vector<itrT&, itrT const&, itrT const&, qi::info const&> params, qi::unused_type, qi::error_handler_result) {
@@ -289,16 +293,43 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		block.name("block");
 		block = lit('{') > (
 			lit('}')[_val = lzMakeNode(val(true), val(Tokens::none))] |
-			(sentence[_a = _val = lzMakeNode(val(Tokens::seq), _1)] > 
-				*(sentence
-					[_b = lzMakeNode(val(Tokens::seq), _1), lzAddNodeContent(_a, val(true), _b), _b = _a]
-				)
-			)
+			(
+				sentence[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(sentence[lzAddNodeContent(_val, val(true), _1)])
+			) > '}'
 		);
+		
+		stxIf.name("if");
+		stxIf =
+			lit("if") >
+			'(' >
+			expr[_val = lzMakeNode(val(Tokens::stxIf), _1)] >
+			')' >
+			(block | sentence)[lzAddNodeContent(_val, val(true), _1)] >>
+			-("else" >> (block | sentence)[lzAddNodeContent(_val, val(true), _1)]);
 
-		ifStc.name("if");
-		ifStc = lit("if") > lit('(') > expr > lit(')') > (sentence | block) > -(lit("else") > (sentence | block));
-		entry %= sentence | block;
+		stxWhile.name("while");
+		stxWhile =
+			lit("while") >
+			'(' >
+			expr[_val = lzMakeNode(val(Tokens::stxWhile), _1)] >
+			')' >
+			(block | sentence)[lzAddNodeContent(_val, val(true), _1)];
+
+		stxFor.name("for");
+		stxFor =
+			lit("for")[_val = lzMakeNode(val(true), val(Tokens::stxFor))] >
+			'(' >
+			(expr[lzAddNodeContent(_val, val(true), _1)] | eps[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >
+			';' >
+			(expr[lzAddNodeContent(_val, val(true), _1)] | eps[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >
+			';' >
+			(expr[lzAddNodeContent(_val, val(true), _1)] | eps[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >
+			')' >
+			(block | sentence)[lzAddNodeContent(_val, val(true), _1)];
+		entry =
+			block[_val = _1] |
+			(sentence[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(sentence[lzAddNodeContent(_val, val(true), _1)]))
+			;
 		
 	}
 

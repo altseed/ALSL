@@ -11,13 +11,12 @@ TEST(ParserTest, ParserTestMain){
 	std::shared_ptr<ALSL::Node> result;
 	std::string src =
 		R"(
-/*
-
-aaaa
-/*bbbb*/
-
-*/
-aaa(1)
+a = 0;
+for(i = 0; i < 10; i += 1) {
+	if(i % 2 == 0) {
+		a += i;
+	}
+}
 )";
 
 	auto itr = boost::spirit::line_pos_iterator<std::string::iterator>(src.begin());
