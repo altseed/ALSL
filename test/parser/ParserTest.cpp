@@ -1,32 +1,27 @@
-#define _VARIADIC_MAX  10
 
 #include<gtest/gtest.h>
-#include<string>
+#include <string>
+#include <boost/optional.hpp>
+#include "../../src/AST/ast.hpp"
 #include "../../src/parser/parser.hpp"
+
 #pragma comment( lib, "gtestd.lib" )
 #pragma comment( lib, "gtest_maind.lib" )
 TEST(ParserTest, ParserTestMain){
-	ALSL::Grammar<boost::spirit::line_pos_iterator<std::string::iterator>> grammar;
-	ALSL::Skipper< boost::spirit::line_pos_iterator<std::string::iterator>> skipper;
-	std::shared_ptr<ALSL::Node> result;
+
 	std::string src =
 		R"(
-a = 0;
-for(i = 0; i < 10; i += 1) {
-	if(i % 2 == 0) {
-		a += i;
+	struct S{
+		int a;
+		int b;
 	}
-}
+	int main(){return 0;}
 )";
 
-	auto itr = boost::spirit::line_pos_iterator<std::string::iterator>(src.begin());
-	
-	auto const end = boost::spirit::line_pos_iterator<std::string::iterator>(src.end());
-	bool res = boost::spirit::qi::phrase_parse(itr, end, grammar, skipper, result);
-	std::cout << *result << std::endl;
-
+	auto res = ALSL::parse(src);
 	EXPECT_TRUE(res);
-	EXPECT_EQ(itr, end);
+	std::cout << **res << std::endl;
+	
 
 }
 int main(int argc, char **argv) {
@@ -36,3 +31,4 @@ int main(int argc, char **argv) {
 	std::cin >> c;
 	return ret;
 }
+

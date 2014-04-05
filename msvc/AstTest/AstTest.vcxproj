@@ -69,6 +69,7 @@
     <ClInclude Include="..\..\src\AST\ast.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\AST\ast.cpp" />
     <ClCompile Include="..\..\test\AST\ASTTest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

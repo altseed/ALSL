@@ -1,4 +1,7 @@
 #pragma once
+#ifndef ALSL_AST_HPP
+#define ALSL_AST_HPP
+
 
 #include <iostream>
 #include <memory>
@@ -37,6 +40,7 @@ namespace ALSL{
 		intLit,
 		floatLit,
 		doubleLit,
+		strLit,
 		identif,
 
 		call, // function call (exp funcName, exp arg, exp arg,...)
@@ -95,15 +99,24 @@ namespace ALSL{
 
 		seq, // ;
 
-		stxIf, // if
+		stxIf, // if(exp cond, block true, [block false])
 		stxWhile, // while
 		stxFor, // for
-		stxDoWhile, // do-while
+		stxDoWhile, // do-while // {}Ç™è»ó™Ç≈Ç´Ç»Ç¢
 		stxFunc, // function declaration
+		stxStruct, // struct declaration
+		type,
+		declVar, // variable declaration
+		declConst, // constant value declaration
+		declProp, // property declaration
+		
+		kwdReturn, // return(exp ret)
+		kwdBreak, // break
+		kwdContinue, // continue
 
 	};
 	namespace Internal{
-		static const std::string tokens2Str[] = { "none", "intLit", "floatLit", "doubleLit", "identif", "call", "arraySubscript", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAssign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssign", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc" };
+		static const std::string tokens2Str[] = {"none", "intLit", "floatLit", "doubleLit", "strLit", "identif", "call", "arraySubscript", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAssign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssign", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc", "stxStruct", "type", "declVar", "declConst", "declProp", "kwdReturn", "kwdBreak", "kwdContinue"};
 
 	}
 
@@ -128,40 +141,7 @@ namespace ALSL{
 			makeNodeImpl(node, args...);
 			return node;
 		}
-		void print(std::ostream& os) override{
-			os << std::boolalpha;
-			os << "{\n";
-			incIndent();
-			printIndent(os);
-			os << "\"Node\": {\n";
-			incIndent();
-			printIndent(os);
-			os << "\"isConst\": " << isConst << ",\n";
-			printIndent(os);
-			os << "\"token\": \"" << Internal::tokens2Str[(int) token] << "\",\n";
-			printIndent(os);
-			os << "\"contents\": [\n";
-			incIndent();
-			bool isFirst = true;
-			for (auto& e : contents){
-				if (isFirst){ isFirst = false; }
-				else { printIndent(os); os << ", // " << Internal::tokens2Str[(int) token] << "\n"; }
-				printIndent(os);
-				if (e.which() == NodeContentTypes::NextNode) { (*boost::get<std::shared_ptr<Node>>(e)).print(os); }
-				else if (e.which() == NodeContentTypes::Identifier) { os << "\"" << e << "\"";}
-				else { os << e; }
-			}
-			os << "\n";
-			decIndent();
-			printIndent(os);
-			os << "]\n";
-			decIndent();
-			printIndent(os);
-			os << "} // " << Internal::tokens2Str[(int) token] << "\n";
-			decIndent();
-			printIndent(os);
-			os << "}\n";
-		}
+		void print(std::ostream& os) override;
 
 		std::shared_ptr<Node> getPtr() { return std::shared_ptr<Node>(this); }
 
@@ -171,8 +151,6 @@ namespace ALSL{
 
 }
 
-std::ostream& operator<<(std::ostream& os, ALSL::Printable& self) {
-	self.print(os);
-	return os;
-}
+std::ostream& operator<<(std::ostream& os, ALSL::Printable& self);
 
+#endif
