@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{41E19A75-5FFA-4FAE-B2CB-CA50079D04C8}</ProjectGuid>
-    <RootNamespace>ALSL</RootNamespace>
+    <ProjectGuid>{098C8539-23F4-4DB6-9062-A34AC9C1D805}</ProjectGuid>
+    <RootNamespace>GeneratorTest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,7 +44,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -58,7 +58,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -67,13 +67,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\AST\ast.cpp" />
-    <ClCompile Include="..\src\generator\generator.cpp" />
-    <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\parser\parser.cpp" />
+    <ClInclude Include="..\..\src\generator\generator.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\main.hpp" />
+    <ClCompile Include="..\..\src\AST\ast.cpp" />
+    <ClCompile Include="..\..\src\generator\generator.cpp" />
+    <ClCompile Include="..\..\src\parser\parser.cpp" />
+    <ClCompile Include="..\..\test\generator\generatorTest.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

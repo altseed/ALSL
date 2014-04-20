@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "../AST/ast.hpp"
-#include "../parser/parser.hpp"
+#include "../parser/parserCore.hpp"
 
 int main() {
 	ALSL::Grammar<boost::spirit::line_pos_iterator<std::string::iterator>> grammar;

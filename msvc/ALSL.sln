@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AstTest", "AstTest\AstTest.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ParserDemo", "ParserDemo\ParserDemo.vcxproj", "{CC834990-3527-43F7-A7BD-5FA65ED461FC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeneratorTest", "GeneratorTest\GeneratorTest.vcxproj", "{098C8539-23F4-4DB6-9062-A34AC9C1D805}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{CC834990-3527-43F7-A7BD-5FA65ED461FC}.Debug|Win32.Build.0 = Debug|Win32
 		{CC834990-3527-43F7-A7BD-5FA65ED461FC}.Release|Win32.ActiveCfg = Release|Win32
 		{CC834990-3527-43F7-A7BD-5FA65ED461FC}.Release|Win32.Build.0 = Release|Win32
+		{098C8539-23F4-4DB6-9062-A34AC9C1D805}.Debug|Win32.ActiveCfg = Debug|Win32
+		{098C8539-23F4-4DB6-9062-A34AC9C1D805}.Debug|Win32.Build.0 = Debug|Win32
+		{098C8539-23F4-4DB6-9062-A34AC9C1D805}.Release|Win32.ActiveCfg = Release|Win32
+		{098C8539-23F4-4DB6-9062-A34AC9C1D805}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

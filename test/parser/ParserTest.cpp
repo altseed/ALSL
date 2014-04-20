@@ -7,20 +7,21 @@
 
 #pragma comment( lib, "gtestd.lib" )
 #pragma comment( lib, "gtest_maind.lib" )
-TEST(ParserTest, ParserTestMain){
+TEST(ParserTest, ParserTestFor) {
 
 	std::string src =
 		R"(
-	struct S{
-		int a;
-		int b;
-	}
-	int main(){return 0;}
-)";
 
-	auto res = ALSL::parse(src);
-	EXPECT_TRUE(res);
-	std::cout << **res << std::endl;
+int main(){
+	1+1
+}
+)";
+	try {
+		auto res = ALSL::parse("file.alsl", src);
+		EXPECT_TRUE(res);
+		std::cout << **res << std::endl;
+	} catch(std::exception e) {std::cout << e.what() << std::endl;}
+	
 	
 
 }
@@ -28,6 +29,7 @@ int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	auto ret = RUN_ALL_TESTS();
 	char c;
+	
 	std::cin >> c;
 	return ret;
 }

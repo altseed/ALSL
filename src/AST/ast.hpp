@@ -43,6 +43,8 @@ namespace ALSL{
 		strLit,
 		identif,
 
+		paren, // paren (exp opd)
+
 		call, // function call (exp funcName, exp arg, exp arg,...)
 		arraySubscript, // [] (exp arrayName, exp index)
 		swizzleOp, // swizzle operation  (exp dataName, identif swizzle)
@@ -116,7 +118,7 @@ namespace ALSL{
 
 	};
 	namespace Internal{
-		static const std::string tokens2Str[] = {"none", "intLit", "floatLit", "doubleLit", "strLit", "identif", "call", "arraySubscript", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAssign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssign", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc", "stxStruct", "type", "declVar", "declConst", "declProp", "kwdReturn", "kwdBreak", "kwdContinue"};
+		static const std::string tokens2Str[] = {"none", "intLit", "floatLit", "doubleLit", "strLit", "identif", "paren", "call", "arraySubscript", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAssign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssign", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc", "stxStruct", "type", "declVar", "declConst", "declProp", "kwdReturn", "kwdBreak", "kwdContinue"};
 
 	}
 

@@ -22,7 +22,7 @@
 namespace ALSL{
 namespace qi = boost::spirit::qi;
 namespace ascii = qi::ascii;
-#line 18
+
 
 template<typename RetT, typename> struct ConceptChecker {
 	using result_type = RetT;
@@ -94,17 +94,40 @@ struct Skipper : qi::grammar<itrT> {
 template <typename itrT, typename skpT = Skipper<itrT>>
 struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
+
+	typedef boost::fusion::vector<itrT&, itrT const&, itrT const&, qi::info const&> ErrorInfo;
+
 	void printErrorMsg(itrT const& first, itrT const& last, itrT const& pos, std::string const& what, std::string const& additional) {
 
-		std::cout << "Error in Line " << boost::spirit::get_line(pos) << ", here: " << boost::spirit::get_current_line(first, pos, pos) << "("<< additional << ")" << std::endl;
+		std::cout << "Error in " << boost::spirit::get_line(pos) << ", here: " << boost::spirit::get_current_line(srcFirst, pos, srcEnd) << "\n\t(" << additional << ")" << std::endl;
+	}
+
+	void printErrorMsg(qi::expectation_failure<itrT> const& inf, std::string const& additional) {
+
+		std::cout << srcName << "(" << boost::spirit::get_line(inf.first) << "): " << additional;
+	}
+
+	void printErrorMsg(ErrorInfo params, std::string const& additional) {
+		auto const first = boost::fusion::at_c<0>(params);
+		auto const last = boost::fusion::at_c<1>(params);
+		auto const pos = boost::fusion::at_c<2>(params);
+		auto const what = boost::fusion::at_c<3>(params);
+		std::cout << "Error in " << srcName << "("boost::spirit::get_line(pos) << "), here: " << boost::spirit::get_current_line(srcFirst, pos, srcEnd) << "\n\t(" << additional << ")" << std::endl;
 	}
 
 	template<typename localT = qi::unused_type, typename attrT = SpNode()> using rule = qi::rule<itrT, attrT, skpT, localT>;
-	rule<> intLtr, floatLit, doubleLit, ltr, lhs, expr, functionCall, sentence, identif, entry, stxIf, stxWhile, stxFor, stxDoWhile, stxStruct, declVar, declConst, declProp, type, kwd;
+	rule<> intLtr, floatLit, doubleLit, paren, ltr, lhs, expr, functionCall, statement, identif, entry, stxIf, stxWhile, stxFor, stxDoWhile, stxStruct, declVar, declConst, declProp, type, kwd;
 	rule<qi::locals<Tokens>> opUnary, opMulDiv, opAddSub, opBitShift, opLtGt, opEqNeq, opBitAnd, opBitXor, opBitOr, opLogicAnd, opLogicOr, opSelectSub, opAssign, opSeq;
 	rule<qi::locals<SpNode, SpNode>> block, stxFunc;
 
-	Grammar(): Grammar::base_type(entry) {
+
+
+	itrT srcFirst, srcEnd;
+	std::string srcName;
+
+
+
+	Grammar(std::string const& fileName, itrT first, itrT end): Grammar::base_type(entry), srcName(fileName), srcFirst(first), srcEnd(end) {
 		using qi::lit; using qi::labels::_val; using qi::eps; using namespace qi::labels;
 		using boost::phoenix::val;
 
@@ -129,17 +152,20 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			qi::int_[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::intLit), _1))] >
 			']');
 
-		ltr.name("Literal or expression in parenthesis");
-		ltr %= floatLit | doubleLit | intLtr | (lit('(') > expr.alias() > lit(')'));
+		paren.name("parenthes");
+		paren = (lit('(') > expr > ')')[_val = lzMakeNode(val(true), val(Tokens::paren), _1)];
+
+		ltr.name("literal");
+		ltr %= floatLit | doubleLit | intLtr;
 
 		functionCall.name("function call");
-		functionCall = (identif > lit('('))[_val = lzMakeNode(val(Tokens::call), _1)] > -(expr[lzAddNodeContent(_val, val(true), _1)] % lit(',')) > lit(')');
+		functionCall = (identif >> lit('('))[_val = lzMakeNode(val(Tokens::call), _1)] > -(opAssign[lzAddNodeContent(_val, val(true), _1)] % lit(',')) > lit(')');
 
-		lhs.name("member selector or array subscript");
+		lhs.name("variable(with member selector or array subscript)");
 		lhs = identif[_val = _1] >>
 			*(
 				(lit('.') > (
-				qi::lexeme[qi::as_string[qi::repeat(1, 4)[qi::char_('w', 'z')]]]
+				qi::lexeme[qi::as_string[qi::repeat(1, 4)[qi::char_('w', 'z') | qi::char_('r') | qi::char_('g') | qi::char_('b') | qi::char_('a')]]]
 						[_val = lzMakeNode(val(Tokens::swizzleOp), _val, lzMakeNode(val(true), val(Tokens::identif), _1))] |
 					ltr
 						[_val = lzMakeNode(val(Tokens::dataMember), _val, lzMakeNode(val(true), val(Tokens::identif), _1))]
@@ -147,9 +173,9 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 				(lit('[') > expr.alias() > lit(']'))[_val = lzMakeNode(val(Tokens::arraySubscript), _val, _1)]
 			);
 
-	opUnary.name("unary operator");
+		opUnary.name("unary operator");
 		opUnary =
-				(ltr | lhs | functionCall)[_val = _1] |
+			(ltr |paren | functionCall | lhs)[_val = _1] |
 				(
 					(
 						lit('-')[_a = val(Tokens::opNeg)] |
@@ -160,91 +186,91 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 		opMulDiv.name("Multiplication, division or modular operator");
 		opMulDiv =
-			opUnary[_val = _1][_val = _1] > *(((
+			opUnary[_val = _1][_val = _1] >> *(((
 			lit('*')[_a = Tokens::opMult] |
 			lit('/')[_a = Tokens::opDiv] |
 			lit('%')[_a = Tokens::opMod]
-			) >
+			) >>
 			opUnary)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 		opAddSub.name("Addition or Subtraction operator");
 		opAddSub =
-			opMulDiv[_val = _1] > *(((
+			opMulDiv[_val = _1] >> *(((
 			lit('+')[_a = Tokens::opAdd] |
 			lit('-')[_a = Tokens::opSub]
-			) >
+			) >>
 			opMulDiv)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 		opBitShift.name("bit shift operator");
 		opBitShift =
-			opAddSub[_val = _1] > *(((
+			opAddSub[_val = _1] >> *(((
 			lit("<<")[_a = Tokens::opLsh] |
 			lit(">>")[_a = Tokens::opRsh]
-			) >
+			) >>
 			opAddSub)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 		opLtGt.name("less than (equal) or greater than (equal)");
 		opLtGt =
-			opBitShift[_val = _1] > *(((
+			opBitShift[_val = _1] >> *(((
 			lit('<')[_a = Tokens::opLt] |
 			lit("<=")[_a = Tokens::opLte] |
 			lit('>')[_a = Tokens::opGt] |
 			lit(">=")[_a = Tokens::opGte]
-			) >
+			) >>
 			opBitShift)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 		opEqNeq.name("(not) equal");
 		opEqNeq =
-			opLtGt[_val = _1] > *(((
+			opLtGt[_val = _1] >> *(((
 			lit("==")[_a = Tokens::opEq] |
 			lit("!=")[_a = Tokens::opNeq]
-			) >
+			) >>
 			opLtGt)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 
 		opBitAnd.name("bitwise and");
 		opBitAnd =
-			opEqNeq[_val = _1] > *(((
+			opEqNeq[_val = _1] >> *(((
 			lit('&')[_a = Tokens::opBitAnd]
-			) >
+			) >>
 			opEqNeq)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 		opBitXor.name("bitwise xor");
 		opBitXor =
-			opBitAnd[_val = _1] > *(((
+			opBitAnd[_val = _1] >> *(((
 			lit('^')[_a = Tokens::opBitXor]
-			) >
+			) >>
 			opBitAnd)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 		opBitOr.name("bitwise or");
 		opBitOr =
-			opBitXor[_val = _1] > *(((
+			opBitXor[_val = _1] >> *(((
 			lit('|')[_a = Tokens::opBitOr]
-			) >
+			) >>
 			opBitXor)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 
 		opLogicAnd.name("logical and");
 		opLogicAnd =
-			opBitOr[_val = _1] > *(((
+			opBitOr[_val = _1] >> *(((
 			lit("&&")[_a = Tokens::opLogicAnd]
-			) >
+			) >>
 			opBitOr)[_val = lzMakeNode(_a, _val, _1)]);
 
 
 		opLogicOr.name("logical or");
 		opLogicOr =
-			opLogicAnd[_val = _1] > *(((
+			opLogicAnd[_val = _1] >> *(((
 			lit("||")[_a = Tokens::opLogicOr]
-			) >
+			) >>
 			opLogicAnd)[_val = lzMakeNode(_a, _val, _1)]);
 
 
@@ -268,31 +294,44 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 					opLogicOr[_val = _1];
 
 		opSeq.name("sequence operator");
-		opSeq = opAssign[_val = _1] > *(lit(',')[_a = val(Tokens::opSeq)] > opAssign[_val = lzMakeNode(_a, _val, _1)]);
-
-
-		expr.name("expression");
-		expr %= declConst | declVar | opSeq;
-
+		opSeq = opAssign[_val = _1] >> *(lit(',')[_a = val(Tokens::opSeq)] > opAssign[_val = lzMakeNode(_a, _val, _1)]);
 		qi::on_error<qi::fail>(
-			expr,
-			[this](boost::fusion::vector<itrT&, itrT const&, itrT const&, qi::info const&> params, qi::unused_type, qi::error_handler_result) {
-			printErrorMsg(
-				boost::fusion::at_c<0>(params),
-				boost::fusion::at_c<1>(params),
-				boost::fusion::at_c<2>(params),
-				boost::fusion::at_c<3>(params).tag,
-				"Unexpected token, maybe missing operators or operands?"
-				);
+			opSeq,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+				printErrorMsg(params, "missing values after an operator");
 			}
 		);
 
 
+
+		expr.name("expression");
+		expr %= declConst | declVar | opSeq;
+		qi::on_error<qi::fail>(
+			expr,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+				printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+			}
+		);
+
 		declVar.name("variant declaration");
 		declVar = (type >> identif)[_val = lzMakeNode(val(false), val(Tokens::declVar), _1, _2)] >> -('=' > expr[lzAddNodeContent(_val, val(true), _1)]);
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
 
 		declConst.name("constant declaration");
 		declConst = (qi::lexeme["const"] >> type >> identif)[_val = lzMakeNode(val(Tokens::declConst), _1, _2)] > '=' > expr[lzAddNodeContent(_val, val(true), _1)];
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
+
 
 		declProp.name("property declaration");
 		declProp =
@@ -305,6 +344,13 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			(floatLit | doubleLit | intLtr)[lzAddNodeContent(_val, val(true), _1)] > ',' >
 			(floatLit | doubleLit | intLtr)[lzAddNodeContent(_val, val(true), _1)] >
 			'}';
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
 
 
 		kwd.name("keyword");
@@ -313,17 +359,22 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 				-(expr[lzAddNodeContent(_val, val(true), _1)]) > ';') |
 			(qi::lexeme["break"][_val = lzMakeNode(val(true), val(Tokens::kwdBreak))] > ';')|
 			(qi::lexeme["continue"][_val = lzMakeNode(val(true), val(Tokens::kwdContinue))] > ';');
-
-		sentence.name("sentence");
-		sentence %= kwd | stxIf | stxWhile | stxFor | stxDoWhile | stxFunc | (expr > lit(';'));
 		qi::on_error<qi::fail>(
-			sentence,
-			[this](boost::fusion::vector<itrT&, itrT const&, itrT const&, qi::info const&> params, qi::unused_type, qi::error_handler_result) {
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
+
+
+		statement.name("statement");
+		statement %= kwd | stxIf | stxWhile | stxFor | stxDoWhile | (expr > lit(';'));
+		qi::on_error<qi::fail>(
+			statement,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(
-				boost::fusion::at_c<0>(params),
-				boost::fusion::at_c<1>(params),
-				boost::fusion::at_c<2>(params),
-				boost::fusion::at_c<3>(params).tag,
+				param,
 				"missing semi-colon?"
 				);
 		}
@@ -335,9 +386,17 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		block = lit('{') > (
 			lit('}')[_val = lzMakeNode(val(true), val(Tokens::none))] |
 			(
-				sentence[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(sentence[lzAddNodeContent(_val, val(true), _1)])
+				statement[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(statement[lzAddNodeContent(_val, val(true), _1)])
 			) > '}'
 		);
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
+
 		
 		stxIf.name("if");
 		stxIf =
@@ -345,8 +404,15 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			'(' >
 			expr[_val = lzMakeNode(val(Tokens::stxIf), _1)] >
 			')' >
-			(block | sentence)[lzAddNodeContent(_val, val(true), _1)] >>
-			-("else" >> (block | sentence)[lzAddNodeContent(_val, val(true), _1)]);
+			(block | statement)[lzAddNodeContent(_val, val(true), _1)] >>
+			-("else" >> (block | statement)[lzAddNodeContent(_val, val(true), _1)]);
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
 
 		stxWhile.name("while");
 		stxWhile =
@@ -354,10 +420,18 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			'(' >
 			expr[_val = lzMakeNode(val(Tokens::stxWhile), _1)] >
 			')' >
-			(block | sentence)[lzAddNodeContent(_val, val(true), _1)];
+			(block | statement)[lzAddNodeContent(_val, val(true), _1)];
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
 
-		stxWhile.name("do-while");
-		stxWhile =
+
+
+		stxDoWhile.name("do-while");
+		stxDoWhile =
 			lit("do")[_val = lzMakeNode(val(true), val(Tokens::stxDoWhile))] >
 			(block)[lzAddNodeContent(_val, val(true), _1)] >
 			"while" >
@@ -365,19 +439,31 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			expr[lzAddNodeContent(_val, val(true), _1)] >
 			')' >
 			';';
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
+
+
 
 		stxFor.name("for");
 		stxFor =
-			lit("for")[_val = lzMakeNode(val(true), val(Tokens::stxFor))] >
-			'(' >
-			(expr[lzAddNodeContent(_val, val(true), _1)] | eps[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >
-			';' >
-			(expr[lzAddNodeContent(_val, val(true), _1)] | eps[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >
-			';' >
-			(expr[lzAddNodeContent(_val, val(true), _1)] | eps[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >
-			')' >
-			(block | sentence)[lzAddNodeContent(_val, val(true), _1)];
+			lit("for")[_val = lzMakeNode(val(true), val(Tokens::stxFor))] >>
+			'(' >>
+			((expr >> ';')[lzAddNodeContent(_val, val(true), _1)] | lit(';')[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >>
+			((expr >> ';')[lzAddNodeContent(_val, val(true), _1)] | lit(';')[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >>
+			((expr >> ')')[lzAddNodeContent(_val, val(true), _1)] | lit(')')[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::none)))]) >>
+			(block | statement)[lzAddNodeContent(_val, val(true), _1)];
 
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
 
 		stxFunc.name("function declaration");
 		stxFunc =
@@ -385,19 +471,45 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			*(declVar[lzAddNodeContent(_val, val(true), _1)] % ',') >
 			')' >
 			block[lzAddNodeContent(_val, val(true), _1)];
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
+
+
+
+
 
 		stxStruct.name("struct declaration");
 		stxStruct = "struct" > identif[_val = lzMakeNode(val(Tokens::stxStruct), _1)] > '{' >
 			*(declVar[lzAddNodeContent(_val, val(true), _1)] > ';') >
 			'}' >> -lit(';');
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
+
+
+
 
 		entry =
 			(((declConst | declProp) > ';') | stxStruct | stxFunc)[_val = lzMakeNode(val(Tokens::seq), _1)] >>
 			*((((declConst | declProp) > ';') | stxStruct | stxFunc)[lzAddNodeContent(_val, val(true), _1)])
 			// block[_val = _1] |
-			// (sentence[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(sentence[lzAddNodeContent(_val, val(true), _1)]))
+			// (statement[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(statement[lzAddNodeContent(_val, val(true), _1)]))
 			;
-		
+		qi::on_error<qi::fail>(
+			declVar,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
 	}
 
 };
