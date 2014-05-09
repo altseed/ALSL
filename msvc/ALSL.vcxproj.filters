@@ -5,8 +5,12 @@
     <ClCompile Include="..\src\AST\ast.cpp" />
     <ClCompile Include="..\src\parser\parser.cpp" />
     <ClCompile Include="..\src\generator\generator.cpp" />
+    <ClCompile Include="..\src\generator\generatorGLSL.cpp" />
+    <ClCompile Include="..\src\generator\generatorHLSL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\main.hpp" />
+    <ClInclude Include="..\src\generator\generatorGLSL.hpp" />
+    <ClInclude Include="..\src\generator\generatorHLSL.hpp" />
   </ItemGroup>
 </Project>

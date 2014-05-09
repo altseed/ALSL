@@ -69,10 +69,14 @@
   <ItemGroup>
     <ClCompile Include="..\src\AST\ast.cpp" />
     <ClCompile Include="..\src\generator\generator.cpp" />
+    <ClCompile Include="..\src\generator\generatorGLSL.cpp" />
+    <ClCompile Include="..\src\generator\generatorHLSL.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\parser\parser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\generator\generatorGLSL.hpp" />
+    <ClInclude Include="..\src\generator\generatorHLSL.hpp" />
     <ClInclude Include="..\src\main.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -12,6 +12,7 @@ namespace ALSL {
 	boost::optional<std::shared_ptr<Node>> parse(std::string const& fileName, std::string const& src);
 	//boost::optional<std::shared_ptr<Node>> parse(std::istream_iterator<char> beg, std::istream_iterator<char> end);
 	boost::optional<std::shared_ptr<Node>> parseFile(std::string const& fileName, std::string const& src);
+	boost::optional<std::shared_ptr<Node>> parseFile(std::string const& fileName);
 
 }
 

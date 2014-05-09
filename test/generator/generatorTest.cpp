@@ -4,40 +4,101 @@
 #include "../../src/AST/ast.hpp"
 #include "../../src/parser/parser.hpp"
 #include "../../src/generator/generator.hpp"
-
+#include "../../src/generator/generatorGLSL.hpp"
+#include "../../src/generator/generatorHLSL.hpp"
 #pragma comment( lib, "gtestd.lib" )
 #pragma comment( lib, "gtest_maind.lib" )
-TEST(Generator, GeneratorTestMain) {
+
+
+TEST(Generator, GeneratorTestIf) {
 
 	std::string src =
-R"(
-	struct RGBA{
-		int r;
-		int g;
-		int b;
-		int a;
-	};
-	int main(){
-		if(1+1==2) {
-			test();
-		} else if(1+2==3){
-			test2();
-		} else {}
+		R"(
+int main(){
+	if(true) 0;
+	if(true){1;}
+	if(true){2;} else 3;
+	if(true){4;} else {5;}
+	if(true){6;} else if(false){7;}
 
-		while(1){
-			test3();
-		}
-	
-	return 0;
-	}
+}
 )";
 
 	auto res = ALSL::parse("file.alsl", src);
 	EXPECT_TRUE(res);
 	ALSL::Generator gen;
-	std::cout << **res << std::endl << "------------" << std::endl;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
 
-	gen.generate(std::cout, *res);
+
+}
+
+
+TEST(Generator, GeneratorTestCall) {
+
+	std::string src =
+		R"(
+int main(){
+	mat4 a_;
+	mat4 b;
+	mul(a_, b);
+	test(a, b);
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
+
+TEST(Generator, GeneratorTestSimple) {
+
+	std::string src =
+R"(
+float VSM(float2 moments, float t)
+{
+	float ex = moments.x;
+	float ex2 = moments.y;
+
+	float p = 0.0;
+	if(t <= ex){ p = 1.0; }
+
+	float variance = ex2 - ex * ex;
+	variance = max(variance, 0.4 / (depthParams_.x * depthParams_.x));
+
+	float d = t - ex;
+	float p_max = variance / (variance + d * d);
+	return max(p, p_max);
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
 
 
 }

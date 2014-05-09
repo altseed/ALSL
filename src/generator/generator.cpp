@@ -274,7 +274,10 @@ namespace ALSL {
 	void Generator::gen_floatLit(std::ostream& os, std::shared_ptr<Node> const node) { os << std::showpoint << get<float>(node->contents.back()) << "f"; }
 	void Generator::gen_doubleLit(std::ostream& os, std::shared_ptr<Node> const node) { os << std::showpoint << get<double>(node->contents.back()); }
 	void Generator::gen_strLit(std::ostream& os, std::shared_ptr<Node> const node) { os << '"' << get<std::string>(node->contents.back()) << '"'; }
-	void Generator::gen_identif(std::ostream& os, std::shared_ptr<Node> const node) { os << get<std::string>(node->contents.back()); }
+	void Generator::gen_identif(std::ostream& os, std::shared_ptr<Node> const node) {
+		auto const name = get<std::string>(node->contents.back());
+		os << name;
+	}
 	void Generator::gen_paren(std::ostream& os, std::shared_ptr<Node> const node) { os << '('; genNextNode(os, node->contents.back()); os << ')'; }
 
 
@@ -637,7 +640,7 @@ namespace ALSL {
 			genNextNode(os, *itr);
 			isToAddSemiColon = true;
 		}
-
+		itr++;
 		if(itr == node->contents.cend()) {
 			if(isToAddSemiColon) {
 				os << ";";
@@ -645,7 +648,7 @@ namespace ALSL {
 			genNL(os);
 			return;
 		} // normal exit
-		itr++;
+
 		os << " else";
 		if(!isNode(*itr)) { return; } // err
 
@@ -662,6 +665,7 @@ namespace ALSL {
 			os << "}";
 		} else {
 			os << " ";
+			isToAddSemiColon = true;
 			genNextNode(os, *itr);
 		}
 		if(isToAddSemiColon) {

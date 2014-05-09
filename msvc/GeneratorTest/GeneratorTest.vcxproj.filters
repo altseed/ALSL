@@ -2,11 +2,15 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="..\..\src\generator\generator.hpp" />
+    <ClInclude Include="..\..\src\generator\generatorGLSL.hpp" />
+    <ClInclude Include="..\..\src\generator\generatorHLSL.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\generator\generator.cpp" />
     <ClCompile Include="..\..\src\parser\parser.cpp" />
     <ClCompile Include="..\..\src\AST\ast.cpp" />
     <ClCompile Include="..\..\test\generator\generatorTest.cpp" />
+    <ClCompile Include="..\..\src\generator\generatorGLSL.cpp" />
+    <ClCompile Include="..\..\src\generator\generatorHLSL.cpp" />
   </ItemGroup>
 </Project>

@@ -53,7 +53,7 @@ namespace ALSL {
 		std::string str;
 		while(!ifs.eof()) {
 			std::string s;
-			std::getline(ifs, s);
+			std::getline(ifs, s );
 			str += s + "\n";
 		}
 		

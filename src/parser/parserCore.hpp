@@ -112,7 +112,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		auto const last = boost::fusion::at_c<1>(params);
 		auto const pos = boost::fusion::at_c<2>(params);
 		auto const what = boost::fusion::at_c<3>(params);
-		std::cout << "Error in " << srcName << "("boost::spirit::get_line(pos) << "), here: " << boost::spirit::get_current_line(srcFirst, pos, srcEnd) << "\n\t(" << additional << ")" << std::endl;
+		std::cout << "Error in " << srcName << "(" << boost::spirit::get_line(pos) << "), here: " << boost::spirit::get_current_line(srcFirst, pos, srcEnd) << "\n\t(" << additional << ")" << std::endl;
 	}
 
 	template<typename localT = qi::unused_type, typename attrT = SpNode()> using rule = qi::rule<itrT, attrT, skpT, localT>;
@@ -143,7 +143,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			[_val = lzMakeNode(val(true), val(Tokens::doubleLit), _1)];
 
 		identif.name("Identifier");
-		identif = qi::as_string[qi::lexeme[(qi::alpha | '_') >> *(qi::alnum | '_')]][_val = lzMakeNode(val(true), val(Tokens::identif), _1)];
+		identif = qi::as_string[qi::lexeme[qi::char_("_a-zA-Z") >> *qi::char_("_a-zA-Z0-9")]][_val = lzMakeNode(val(true), val(Tokens::identif), _1)];
 
 		type.name("type name");
 		type =
@@ -215,10 +215,10 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		opLtGt.name("less than (equal) or greater than (equal)");
 		opLtGt =
 			opBitShift[_val = _1] >> *(((
-			lit('<')[_a = Tokens::opLt] |
 			lit("<=")[_a = Tokens::opLte] |
-			lit('>')[_a = Tokens::opGt] |
-			lit(">=")[_a = Tokens::opGte]
+			lit('<')[_a = Tokens::opLt] |
+			lit(">=")[_a = Tokens::opGte] |
+			lit('>')[_a = Tokens::opGt]
 			) >>
 			opBitShift)[_val = lzMakeNode(_a, _val, _1)]);
 
@@ -374,7 +374,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			statement,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(
-				param,
+				params,
 				"missing semi-colon?"
 				);
 		}
