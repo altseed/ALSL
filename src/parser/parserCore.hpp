@@ -153,7 +153,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			']');
 
 		paren.name("parenthes");
-		paren = (lit('(') > expr > ')')[_val = lzMakeNode(val(true), val(Tokens::paren), _1)];
+		paren = (lit('(') > expr.alias() > ')')[_val = lzMakeNode(val(true), val(Tokens::paren), _1)];
 
 		ltr.name("literal");
 		ltr %= floatLit | doubleLit | intLtr;
@@ -357,8 +357,8 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		kwd =
 			(qi::lexeme["return"][_val = lzMakeNode(val(true), val(Tokens::kwdReturn))] >>
 				-(expr[lzAddNodeContent(_val, val(true), _1)]) > ';') |
-			(qi::lexeme["break"][_val = lzMakeNode(val(true), val(Tokens::kwdBreak))] > ';')|
-			(qi::lexeme["continue"][_val = lzMakeNode(val(true), val(Tokens::kwdContinue))] > ';');
+				(qi::lexeme["break"][_val = lzMakeNode(val(true), val(Tokens::kwdBreak))] > ';') |
+				(qi::lexeme["continue"][_val = lzMakeNode(val(true), val(Tokens::kwdContinue))] > ';');
 		qi::on_error<qi::fail>(
 			declVar,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {

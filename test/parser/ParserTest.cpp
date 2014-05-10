@@ -67,9 +67,77 @@ int main(){
 	try {
 		auto res = ALSL::parse("file.alsl", src);
 		EXPECT_TRUE(res);
+		// std::cout << **res << std::endl;
+	} catch(std::exception e) { std::cout << e.what() << std::endl; }
+}
+
+
+
+TEST(ParserTest, Issue3) {
+
+	std::string src =
+		R"(
+mat4 calcMatrix(float4 weights, int4 indexes)
+{
+return matM[indexes.x] * weights.x +
+matM[indexes.y] * weights.y +
+matM[indexes.z] * weights.z +
+matM[indexes.w] * weights.w;
+}
+)";
+	try {
+		auto res = ALSL::parse("file.alsl", src);
+		EXPECT_TRUE(res);
+		// std::cout << **res << std::endl;
+	} catch(std::exception e) { std::cout << e.what() << std::endl; }
+}
+
+TEST(ParserTest, ArithOp) {
+
+	std::string src =
+		R"(
+int main(){
+ a[x] * b.x + c * d + e * f + g * h;
+ return 0;
+}
+)";
+	try {
+		auto res = ALSL::parse("file.alsl", src);
+		EXPECT_TRUE(res);
 		//std::cout << **res << std::endl;
 	} catch(std::exception e) { std::cout << e.what() << std::endl; }
 }
+
+TEST(ParserTest, Subscription) {
+
+	std::string src =
+		R"(
+int main(){
+ a[x + y];
+ return 0;
+}
+)";
+	try {
+		auto res = ALSL::parse("file.alsl", src);
+		EXPECT_TRUE(res);
+		//std::cout << **res << std::endl;
+	} catch(std::exception e) { std::cout << e.what() << std::endl; }
+}
+
+TEST(ParserTest, Paren) {
+
+	std::string src =
+		R"(
+ a * (b + c) * d;
+)";
+	try {
+		auto res = ALSL::parse("file.alsl", src);
+		EXPECT_TRUE(res);
+		//std::cout << **res << std::endl;
+	} catch(std::exception e) { std::cout << e.what() << std::endl; }
+}
+
+
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	auto ret = RUN_ALL_TESTS();

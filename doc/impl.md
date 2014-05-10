@@ -23,6 +23,5 @@
 
 s—ñ‚ÍHLSL‚Å‚Írow_majorCü‚³‚ê‚Ü‚·
 
-
 ## •ÏŠ·‚³‚ê‚éŠÖ”
  + mul(m1, m2): s—ñ‚ÌÏ
