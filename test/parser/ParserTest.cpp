@@ -97,6 +97,7 @@ TEST(ParserTest, ArithOp) {
 	std::string src =
 		R"(
 int main(){
+-!a;
  a[x] * b.x + c * d + e * f + g * h;
  return 0;
 }

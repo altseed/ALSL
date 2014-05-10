@@ -144,7 +144,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 		identif.name("Identifier");
 		identif = qi::as_string[qi::lexeme[qi::char_("_a-zA-Z") >> *qi::char_("_a-zA-Z0-9")]][_val = lzMakeNode(val(true), val(Tokens::identif), _1)];
-
+		
 		type.name("type name");
 		type =
 			identif[_val = lzMakeNode(val(true), val(Tokens::type), _1)] >>
