@@ -21,7 +21,7 @@ _ _a_b(){}
 		EXPECT_TRUE(res);
 		auto a = **res;
 
-		std::cout << **res << std::endl;
+		//std::cout << **res << std::endl;
 	} catch(std::exception e) { std::cout << e.what() << std::endl; }
 }
 
@@ -114,6 +114,7 @@ TEST(ParserTest, Subscription) {
 	std::string src =
 		R"(
 int main(){
+ x+y;
  a[x + y];
  return 0;
 }
@@ -129,7 +130,9 @@ TEST(ParserTest, Paren) {
 
 	std::string src =
 		R"(
+int main(){
  a * (b + c) * d;
+}
 )";
 	try {
 		auto res = ALSL::parse("file.alsl", src);

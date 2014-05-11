@@ -147,13 +147,13 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		
 		type.name("type name");
 		type =
-			identif[_val = lzMakeNode(val(true), val(Tokens::type), _1)] >>
-			*('[' >
-			qi::int_[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::intLit), _1))] >
-			']');
+			identif[_val = lzMakeNode(val(true), val(Tokens::type), _1)];// >>
+			//*('[' >
+			//qi::int_[lzAddNodeContent(_val, val(true), lzMakeNode(val(true), val(Tokens::intLit), _1))] >
+			//']');
 
 		paren.name("parenthes");
-		paren = (lit('(') > expr.alias() > ')')[_val = lzMakeNode(val(true), val(Tokens::paren), _1)];
+		paren = (lit('(') >> expr >> ')')[_val = lzMakeNode(val(true), val(Tokens::paren), _1)];
 
 		ltr.name("literal");
 		ltr %= floatLit | doubleLit | intLtr;
@@ -170,9 +170,9 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 					ltr
 						[_val = lzMakeNode(val(Tokens::dataMember), _val, lzMakeNode(val(true), val(Tokens::identif), _1))]
 				)) |
-				(lit('[') > expr.alias() > lit(']'))[_val = lzMakeNode(val(Tokens::arraySubscript), _val, _1)]
+				(lit('[') >> expr >> lit(']'))[_val = lzMakeNode(val(Tokens::arraySubscript), _val, _1)]
 			);
-
+		debug(expr);
 		opUnary.name("unary operator");
 		opUnary =
 			(ltr |paren | functionCall | lhs)[_val = _1] |
