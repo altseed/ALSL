@@ -103,6 +103,35 @@ float VSM(float2 moments, float t)
 
 }
 
+TEST(Generator, Issue3) {
+
+	std::string src =
+		R"(
+mat4 calcMatrix(float4 weights, int4 indexes)
+{
+return matM[indexes.x] * weights.x +
+matM[indexes.y] * weights.y +
+matM[indexes.z] * weights.z +
+matM[indexes.w] * weights.w;
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
+
+
 
 
 
