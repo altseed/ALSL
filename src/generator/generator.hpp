@@ -109,6 +109,7 @@ namespace ALSL {
 		virtual void gen_kwdReturn(std::ostream& os, std::shared_ptr<Node> const node);
 		virtual void gen_kwdBreak(std::ostream& os, std::shared_ptr<Node> const node);
 		virtual void gen_kwdContinue(std::ostream& os, std::shared_ptr<Node> const node);
+		virtual void gen_preprocessor(std::ostream& os, std::shared_ptr<Node> const node);
 
 
 

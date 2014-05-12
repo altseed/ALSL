@@ -262,6 +262,10 @@ namespace ALSL {
 		case Tokens::kwdContinue:
 			gen_kwdContinue(os, node);
 			break;
+		case Tokens::preprocessor:
+			gen_preprocessor(os, node);
+			break;
+
 
 		default:
 			break;
@@ -847,5 +851,12 @@ namespace ALSL {
 	}
 	void Generator::gen_kwdContinue(std::ostream& os, std::shared_ptr<Node> const node) {
 		os << "continue";
+	}
+
+
+	void Generator::gen_preprocessor(std::ostream& os, std::shared_ptr<Node> const node) {
+		if(!node->contents.empty()) {
+			genNextNode(os, node->contents.back());
+		}
 	}
 }

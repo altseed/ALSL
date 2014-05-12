@@ -116,7 +116,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 	}
 
 	template<typename localT = qi::unused_type, typename attrT = SpNode()> using rule = qi::rule<itrT, attrT, skpT, localT>;
-	rule<> intLtr, floatLit, doubleLit, paren, ltr, lhs, expr, functionCall, statement, identif, entry, stxIf, stxWhile, stxFor, stxDoWhile, stxStruct, declVar, declConst, declProp, type, kwd;
+	rule<> intLtr, floatLit, doubleLit, paren, ltr, lhs, expr, functionCall, statement, identif, entry, stxIf, stxWhile, stxFor, stxDoWhile, stxStruct, declVar, declConst, declProp, type, kwd, preprocessor;
 	rule<qi::locals<Tokens>> opUnary, opMulDiv, opAddSub, opBitShift, opLtGt, opEqNeq, opBitAnd, opBitXor, opBitOr, opLogicAnd, opLogicOr, opSelectSub, opAssign, opSeq;
 	rule<qi::locals<SpNode, SpNode>> block, stxFunc;
 
@@ -145,6 +145,17 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		identif.name("Identifier");
 		identif = qi::as_string[qi::lexeme[qi::char_("_a-zA-Z") >> *qi::char_("_a-zA-Z0-9")]][_val = lzMakeNode(val(true), val(Tokens::identif), _1)];
 		
+
+
+		preprocessor.name("preprocessor");
+		preprocessor = qi::as_string[qi::no_skip["#" >> *(qi::char_ - qi::lit('\r') - qi::lit('\n'))]][_val = lzMakeNode(true, val(Tokens::preprocessor), lzMakeNode(true, val(Tokens::identif), _1))];
+		qi::on_error<qi::fail>(
+			preprocessor,
+			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
+			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+		}
+		);
+
 		type.name("type name");
 		type =
 			identif[_val = lzMakeNode(val(true), val(Tokens::type), _1)];// >>
@@ -172,7 +183,6 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 				)) |
 				(lit('[') >> expr >> lit(']'))[_val = lzMakeNode(val(Tokens::arraySubscript), _val, _1)]
 			);
-		debug(expr);
 		opUnary.name("unary operator");
 		opUnary =
 			(ltr |paren | functionCall | lhs)[_val = _1] |
@@ -325,7 +335,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		declConst.name("constant declaration");
 		declConst = (qi::lexeme["const"] >> type >> identif)[_val = lzMakeNode(val(Tokens::declConst), _1, _2)] > '=' > expr[lzAddNodeContent(_val, val(true), _1)];
 		qi::on_error<qi::fail>(
-			declVar,
+			declConst,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -360,7 +370,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 				(qi::lexeme["break"][_val = lzMakeNode(val(true), val(Tokens::kwdBreak))] > ';') |
 				(qi::lexeme["continue"][_val = lzMakeNode(val(true), val(Tokens::kwdContinue))] > ';');
 		qi::on_error<qi::fail>(
-			declVar,
+			kwd,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -369,7 +379,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 
 		statement.name("statement");
-		statement %= kwd | stxIf | stxWhile | stxFor | stxDoWhile | (expr > lit(';'));
+		statement %= preprocessor | kwd | stxIf | stxWhile | stxFor | stxDoWhile | (expr > lit(';'));
 		qi::on_error<qi::fail>(
 			statement,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
@@ -386,11 +396,11 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		block = lit('{') > (
 			lit('}')[_val = lzMakeNode(val(true), val(Tokens::none))] |
 			(
-				statement[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(statement[lzAddNodeContent(_val, val(true), _1)])
+			statement[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(statement[lzAddNodeContent(_val, val(true), _1)])
 			) > '}'
 		);
 		qi::on_error<qi::fail>(
-			declVar,
+			block,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -407,7 +417,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			(block | statement)[lzAddNodeContent(_val, val(true), _1)] >>
 			-("else" >> (block | statement)[lzAddNodeContent(_val, val(true), _1)]);
 		qi::on_error<qi::fail>(
-			declVar,
+			stxIf,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -422,7 +432,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			')' >
 			(block | statement)[lzAddNodeContent(_val, val(true), _1)];
 		qi::on_error<qi::fail>(
-			declVar,
+			stxWhile,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -440,7 +450,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			')' >
 			';';
 		qi::on_error<qi::fail>(
-			declVar,
+			stxDoWhile,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -459,7 +469,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			(block | statement)[lzAddNodeContent(_val, val(true), _1)];
 
 		qi::on_error<qi::fail>(
-			declVar,
+			stxFor,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -472,7 +482,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			')' >
 			block[lzAddNodeContent(_val, val(true), _1)];
 		qi::on_error<qi::fail>(
-			declVar,
+			stxFunc,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
@@ -488,24 +498,21 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 			*(declVar[lzAddNodeContent(_val, val(true), _1)] > ';') >
 			'}' >> -lit(';');
 		qi::on_error<qi::fail>(
-			declVar,
+			stxStruct,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}
 		);
 
 
-
-
-
 		entry =
-			(((declConst | declProp) > ';') | stxStruct | stxFunc)[_val = lzMakeNode(val(Tokens::seq), _1)] >>
-			*((((declConst | declProp) > ';') | stxStruct | stxFunc)[lzAddNodeContent(_val, val(true), _1)])
+			(preprocessor | ((declConst | declProp) > ';') | stxStruct | stxFunc)[_val = lzMakeNode(val(Tokens::seq), _1)] >>
+			*((preprocessor | ((declConst | declProp) > ';') | stxStruct | stxFunc)[lzAddNodeContent(_val, val(true), _1)])
 			// block[_val = _1] |
 			// (statement[_val = lzMakeNode(val(Tokens::seq), _1)] >> *(statement[lzAddNodeContent(_val, val(true), _1)]))
 			;
 		qi::on_error<qi::fail>(
-			declVar,
+			entry,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
 			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
 		}

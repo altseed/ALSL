@@ -131,7 +131,34 @@ matM[indexes.w] * weights.w;
 
 }
 
+TEST(Generator, Preprocessor) {
 
+	std::string src =
+		R"(
+float Test()
+{
+#ifdef ONE
+return 1.0;
+#endif
+return 0.0;
+}
+
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
 
 
 

@@ -141,6 +141,24 @@ int main(){
 	} catch(std::exception e) { std::cout << e.what() << std::endl; }
 }
 
+TEST(ParserTest, Preprocessor) {
+
+	std::string src =
+		R"(
+float Test()
+{
+#ifdef ONE
+return 1.0;
+#endif
+return 0.0;
+}
+)";
+	try {
+		auto res = ALSL::parse("file.alsl", src);
+		EXPECT_TRUE(res);
+		std::cout << **res << std::endl;
+	} catch(std::exception e) { std::cout << e.what() << std::endl; }
+}
 
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
