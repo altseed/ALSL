@@ -144,11 +144,13 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 		identif.name("Identifier");
 		identif = qi::as_string[qi::lexeme[qi::char_("_a-zA-Z") >> *qi::char_("_a-zA-Z0-9")]][_val = lzMakeNode(val(true), val(Tokens::identif), _1)];
+		// qi::char_('_')|qi::alnum等とやると、_のある場所でバッファオーバーランする
 		
 
 
 		preprocessor.name("preprocessor");
-		preprocessor = qi::as_string[qi::no_skip["#" >> *(qi::char_ - qi::lit('\r') - qi::lit('\n'))]][_val = lzMakeNode(true, val(Tokens::preprocessor), lzMakeNode(true, val(Tokens::identif), _1))];
+		preprocessor = qi::as_string[qi::lexeme[qi::char_("#") >> *(qi::char_ - qi::lit('\r') - qi::lit('\n'))]][_val = lzMakeNode(true, val(Tokens::preprocessor), lzMakeNode(true, val(Tokens::identif), _1))];
+		// lexemeの代わりにno_skipを使うとパースできない(char_か何かと食い合ってる可能性)
 		qi::on_error<qi::fail>(
 			preprocessor,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
@@ -495,7 +497,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 		stxStruct.name("struct declaration");
 		stxStruct = "struct" > identif[_val = lzMakeNode(val(Tokens::stxStruct), _1)] > '{' >
-			*(declVar[lzAddNodeContent(_val, val(true), _1)] > ';') >
+			*(preprocessor[lzAddNodeContent(_val, val(true), _1)] | (declVar[lzAddNodeContent(_val, val(true), _1)] > ';')) >
 			'}' >> -lit(';');
 		qi::on_error<qi::fail>(
 			stxStruct,
