@@ -604,15 +604,19 @@ namespace ALSL {
 
 	void Generator::gen_seq(std::ostream& os, std::shared_ptr<Node> const node) {
 		for(auto const& cont : node->contents) {
-			genNextNode(os, cont);
 			auto const tok = getNode(cont).token;
+			if(tok != Tokens::preprocessor) {
+				genIndent(os);
+			}
+			genNextNode(os, cont);
 			if(
 				tok != Tokens::stxFunc &&
 				tok != Tokens::stxIf &&
 				tok != Tokens::stxWhile &&
 				tok != Tokens::stxDoWhile &&
 				tok != Tokens::stxFor &&
-				tok != Tokens::stxStruct
+				tok != Tokens::stxStruct &&
+				tok != Tokens::preprocessor
 			) { os << ';'; }
 			genNL(os);
 		}
@@ -632,12 +636,14 @@ namespace ALSL {
 		if(getNode(*itr).token == Tokens::none) {
 			os << " {}";
 		} else if(getNode(*itr).token == Tokens::seq) {
-			os << " {";
+			genNL(os);
+			genIndent(os);
+			os << "{";
 			indent++;
 			genNL(os);
 			genNextNode(os, *itr);
 			indent--;
-			genNL(os);
+			genIndent(os);
 			os << "}";
 		} else {
 			os << " ";
@@ -658,7 +664,7 @@ namespace ALSL {
 
 		if(getNode(*itr).token == Tokens::none) {
 			os << " {}";
-			genNL(os);
+
 		} else if(getNode(*itr).token == Tokens::seq) {
 			os << " {";
 			indent++;
@@ -666,6 +672,7 @@ namespace ALSL {
 			genNextNode(os, *itr);
 			indent--;
 			genNL(os);
+			genIndent(os);
 			os << "}";
 		} else {
 			os << " ";
@@ -674,8 +681,8 @@ namespace ALSL {
 		}
 		if(isToAddSemiColon) {
 			os << ";";
-			genNL(os);
 		}
+		genNL(os);
 	}
 	void Generator::gen_stxWhile(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
@@ -687,21 +694,20 @@ namespace ALSL {
 		if(itr == node->contents.cend() || !isNode(*itr)) { return; } // err
 		if(getNode(*itr).token == Tokens::none) {
 			os << " {}";
-			genNL(os);
 		} else if(getNode(*itr).token == Tokens::seq) {
+			genIndent(os);
 			os << " {";
 			indent++;
 			genNL(os);
 			genNextNode(os, *itr);
 			indent--;
-			genNL(os);
 			os << "}";
 		} else {
 			os << " ";
 			genNextNode(os, *itr);
 			os << ";";
-			genNL(os);
 		}
+		genNL(os);
 	}
 	void Generator::gen_stxFor(std::ostream& os, std::shared_ptr<Node> const node) {
 	
@@ -722,31 +728,35 @@ namespace ALSL {
 		if(itr == node->contents.cend() || !isNode(*itr)) { return; } // err
 		if(getNode(*itr).token == Tokens::none) {
 			os << " {}";
-			genNL(os);
+
 		} else if(getNode(*itr).token == Tokens::seq) {
+			genIndent(os);
 			os << " {";
-			indent++;
 			genNL(os);
+			indent++;
 			genNextNode(os, *itr);
 			indent--;
-			genNL(os);
+			genIndent(os);
 			os << "}";
 		} else {
 			os << " ";
 			genNextNode(os, *itr);
 			os << ";";
-			genNL(os);
 		}
+		genNL(os);
 	}
 	void Generator::gen_stxDoWhile(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
+		genIndent(os);
 		os << "do";
 		genNL(os);
+		genIndent(os);
 		os << "{";
 		indent++;
 		genNL(os);
 		genNextNode(os, *(itr++));
 		indent--;
+		genIndent(os);
 		os << "} while(";
 		genNextNode(os, *(itr++));
 		os << ");";
@@ -755,6 +765,7 @@ namespace ALSL {
 	}
 	void Generator::gen_stxFunc(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
+		genIndent(os);
 		genNextNode(os, *(itr++));// type
 		os << " ";
 		genNextNode(os, *(itr++));// name
@@ -772,30 +783,33 @@ namespace ALSL {
 		if(getNode(*itr).token == Tokens::none) {os << " {}";}
 		else {
 			genNL(os);
+			genIndent(os);
 			os << "{";
 			indent++;
 			genNL(os);
 			genNextNode(os, *itr);
 			indent--;
 			genNL(os);
+			genIndent(os);
 			os << "}";
-			genNL(os);
 		}
+		genNL(os);
 	
 	}
 	void Generator::gen_stxStruct(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
+		genIndent(os);
 		os << "struct ";
 		genNextNode(os, *(itr++)); // name
 		genNL(os);
+		genIndent(os);
 		os << "{";
 		indent++;
 		for(; itr != node->contents.cend(); itr++) {
-			genNL(os);
 			genNextNode(os, *itr);
 		}
 		indent--;
-		genNL(os);
+		genIndent(os);
 		os << "};";
 		genNL(os);
 

@@ -40,6 +40,148 @@ int main(){
 }
 
 
+
+TEST(Generator, GeneratorTestFor) {
+
+	std::string src =
+		R"(
+int main(){
+	for(1;2;3) 4;
+	for(;;) {5;}
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
+
+
+TEST(Generator, GeneratorTestWhile) {
+
+	std::string src =
+		R"(
+int main(){
+	while(true)1;
+	while(false){2;3;}
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
+
+
+TEST(Generator, GeneratorTestDoWhile) {
+
+	std::string src =
+		R"(
+int main(){
+	do{
+		1;
+		2;
+	} while(true);
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
+TEST(Generator, GeneratorTestStruct) {
+
+	std::string src =
+		R"(
+struct S {
+	int i;
+	vec2 v;
+}
+
+int main(){
+	S s;
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
+
+TEST(Generator, GeneratorTestCompound) {
+
+	std::string src =
+		R"(
+struct S {
+	int i;
+	vec2 v;
+}
+
+int main(){
+	S s;
+	int i = 0;
+	while(i < 10) {
+		for(int j = 0; j <= 10; j += 1) s.i += i * j;
+		i += 1;
+		if(false){break;}
+	}
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	std::cout << "Input: " << std::endl << src << std::endl;
+	std::cout << "\n----------\nGLSL: " << std::endl;
+	genGL.generate(std::cout, *res);
+	std::cout << "\n----------\nHLSL: " << std::endl;
+	genHL.generate(std::cout, *res);
+
+
+}
 TEST(Generator, GeneratorTestCall) {
 
 	std::string src =

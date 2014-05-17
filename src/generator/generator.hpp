@@ -25,12 +25,13 @@ namespace ALSL {
 
 		void genNL(std::ostream& os) const {
 			os << "\n";
+		}
+		void genIndent(std::ostream& os) const {
 			for(int i = 0; i < indent; i++) {
 				os << '\t';
 
 			}
 		}
-
 		virtual void gen_none(std::ostream& os, std::shared_ptr<Node> const node);
 		virtual void gen_intLit(std::ostream& os, std::shared_ptr<Node> const node);
 		virtual void gen_floatLit(std::ostream& os, std::shared_ptr<Node> const node);
