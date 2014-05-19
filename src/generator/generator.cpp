@@ -700,6 +700,7 @@ namespace ALSL {
 			genNL(os);
 			genNextNode(os, *itr);
 			indent--;
+			genIndent(os);
 			os << "}";
 		} else {
 			os << " ";
