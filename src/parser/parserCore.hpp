@@ -200,7 +200,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 				(lit('.') > (
 				qi::lexeme[qi::as_string[qi::repeat(1, 4)[qi::char_('w', 'z') | qi::char_('r') | qi::char_('g') | qi::char_('b') | qi::char_('a')]]]
 						[_val = lzMakeNode(val(Tokens::swizzleOp), _val, lzMakeNode(val(true), val(Tokens::identif), _1))] |
-					ltr
+				qi::as_string[qi::lexeme[qi::char_("_a-zA-Z") >> *qi::char_("_a-zA-Z0-9")]]
 						[_val = lzMakeNode(val(Tokens::dataMember), _val, lzMakeNode(val(true), val(Tokens::identif), _1))]
 				)) |
 				(lit('[') >> expr >> lit(']'))[_val = lzMakeNode(val(Tokens::arraySubscript), _val, _1)]

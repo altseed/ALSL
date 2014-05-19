@@ -15,6 +15,7 @@ TEST(ParserTest, ParserTestIdentif) {
 		R"(
 a b(){}
 _ _a_b(){}
+a.i;
 )";
 	try {
 		auto res = ALSL::parse("file.alsl", src);
