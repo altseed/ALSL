@@ -671,7 +671,6 @@ namespace ALSL {
 			genNL(os);
 			genNextNode(os, *itr);
 			indent--;
-			genNL(os);
 			genIndent(os);
 			os << "}";
 		} else {
@@ -682,7 +681,7 @@ namespace ALSL {
 		if(isToAddSemiColon) {
 			os << ";";
 		}
-		genNL(os);
+		//genNL(os);
 	}
 	void Generator::gen_stxWhile(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
@@ -707,7 +706,7 @@ namespace ALSL {
 			genNextNode(os, *itr);
 			os << ";";
 		}
-		genNL(os);
+		//genNL(os);
 	}
 	void Generator::gen_stxFor(std::ostream& os, std::shared_ptr<Node> const node) {
 	
@@ -743,7 +742,7 @@ namespace ALSL {
 			genNextNode(os, *itr);
 			os << ";";
 		}
-		genNL(os);
+		//genNL(os);
 	}
 	void Generator::gen_stxDoWhile(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
@@ -760,7 +759,7 @@ namespace ALSL {
 		os << "} while(";
 		genNextNode(os, *(itr++));
 		os << ");";
-		genNL(os);
+		//genNL(os);
 		
 	}
 	void Generator::gen_stxFunc(std::ostream& os, std::shared_ptr<Node> const node) {
@@ -789,7 +788,6 @@ namespace ALSL {
 			genNL(os);
 			genNextNode(os, *itr);
 			indent--;
-			genNL(os);
 			genIndent(os);
 			os << "}";
 		}
@@ -804,9 +802,13 @@ namespace ALSL {
 		genNL(os);
 		genIndent(os);
 		os << "{";
+		genNL(os);
 		indent++;
 		for(; itr != node->contents.cend(); itr++) {
+			genIndent(os);
 			genNextNode(os, *itr);
+			os << ";";
+			genNL(os);
 		}
 		indent--;
 		genIndent(os);

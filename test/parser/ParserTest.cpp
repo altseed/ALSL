@@ -38,6 +38,10 @@ int main(){
 	}
 
 	for(;;) 1;
+
+	for(int i = 0; i < 10; i += 1) {
+		if(i == 1){break;}
+	}
 }
 )";
 	try {
@@ -99,6 +103,7 @@ TEST(ParserTest, ArithOp) {
 int main(){
 -!a;
  a[x] * b.x + c * d + e * f + g * h;
+a.x = b.x + c.x;
  return 0;
 }
 )";

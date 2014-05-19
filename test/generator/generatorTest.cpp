@@ -161,7 +161,7 @@ int main(){
 	S s;
 	int i = 0;
 	while(i < 10) {
-		for(int j = 0; j <= 10; j += 1) s.i += i * j;
+		for(int j = 0; j <= 10; j += 1){s.i += i * j;}
 		i += 1;
 		if(false){break;}
 	}
