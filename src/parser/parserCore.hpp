@@ -97,6 +97,26 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 
 	typedef boost::fusion::vector<itrT&, itrT const&, itrT const&, qi::info const&> ErrorInfo;
 
+
+	template<class itrT> std::string getContainedLine(boost::spirit::line_pos_iterator<itrT> begin, boost::spirit::line_pos_iterator<itrT> pos, boost::spirit::line_pos_iterator<itrT> end) {
+		itrT first = pos.base();
+		itrT last = pos.base();
+		while(begin.base() <= first && *first != '\r' && *first != '\n') { --first; }
+		while(last < end.base() && *last != '\r' && *last != '\n') { ++last; }
+		auto ret = std::string(first, last) + '\n';
+		for(auto it = first; it < last; ++it) {
+			if(it == pos.base()) {
+				ret += '^';
+			} else if(*it == '\t') {
+				ret += '\t';
+			} else {
+				ret += ' '; // TODO: consider multibyte char
+			}
+		}
+		return ret;
+	}
+
+
 	void printErrorMsg(itrT const& first, itrT const& last, itrT const& pos, std::string const& what, std::string const& additional) {
 
 		std::cout << "Error in " << boost::spirit::get_line(pos) << ", here: " << boost::spirit::get_current_line(srcFirst, pos, srcEnd) << "\n\t(" << additional << ")" << std::endl;
@@ -112,7 +132,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		auto const last = boost::fusion::at_c<1>(params);
 		auto const pos = boost::fusion::at_c<2>(params);
 		auto const what = boost::fusion::at_c<3>(params);
-		std::cout << "Error in " << srcName << "(" << boost::spirit::get_line(pos) << "), here: " << boost::spirit::get_current_line(srcFirst, pos, srcEnd) << "\n\t(" << additional << ")" << std::endl;
+		std::cout << "Error in " << srcName << "(" << boost::spirit::get_line(pos) << "), here: " << getContainedLine(srcFirst, pos, srcEnd) << "\n\t(" << additional << ")" << std::endl;
 	}
 
 	template<typename localT = qi::unused_type, typename attrT = SpNode()> using rule = qi::rule<itrT, attrT, skpT, localT>;
@@ -368,13 +388,13 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		kwd.name("keyword");
 		kwd =
 			(qi::lexeme["return"][_val = lzMakeNode(val(true), val(Tokens::kwdReturn))] >>
-				-(expr[lzAddNodeContent(_val, val(true), _1)]) > ';') |
-				(qi::lexeme["break"][_val = lzMakeNode(val(true), val(Tokens::kwdBreak))] > ';') |
-				(qi::lexeme["continue"][_val = lzMakeNode(val(true), val(Tokens::kwdContinue))] > ';');
+				-(expr[lzAddNodeContent(_val, val(true), _1)]) >> ';') |
+				(qi::lexeme["break"][_val = lzMakeNode(val(true), val(Tokens::kwdBreak))] >> ';') |
+				(qi::lexeme["continue"][_val = lzMakeNode(val(true), val(Tokens::kwdContinue))] >> ';');
 		qi::on_error<qi::fail>(
 			kwd,
 			[this](ErrorInfo params, qi::unused_type, qi::error_handler_result) {
-			printErrorMsg(params, "Unexpected token, maybe missing operators or operands?");
+			printErrorMsg(params, "parsing failed at keyword. missing semi-colon?");
 		}
 		);
 

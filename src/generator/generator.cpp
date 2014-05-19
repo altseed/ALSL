@@ -655,7 +655,7 @@ namespace ALSL {
 			if(isToAddSemiColon) {
 				os << ";";
 			}
-			genNL(os);
+			// genNL(os);
 			return;
 		} // normal exit
 
