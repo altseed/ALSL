@@ -309,7 +309,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		opAssign.name("assign operators");
 		opAssign = (
 						lhs[_val = _1] >> (
-							lit('=')[_a = Tokens::opAssign] |
+							(lit('=') >> !lit('='))[_a = Tokens::opAssign] |
 							lit("*=")[_a = Tokens::opMultAssign] |
 							lit("/=")[_a = Tokens::opDivAssign] |
 							lit("%=")[_a = Tokens::opModAssign] |

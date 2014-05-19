@@ -65,7 +65,7 @@ int main(){
 
 	if(0)1;
 	1;
-	if(t <= ex){} else {}
+	if(t == ex){} else {}
 }
 )";
 	try {
@@ -104,6 +104,8 @@ int main(){
 -!a;
  a[x] * b.x + c * d + e * f + g * h;
 a.x = b.x + c.x;
+a == b;
+a += b;
  return 0;
 }
 )";
