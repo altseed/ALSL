@@ -106,6 +106,7 @@ int main(){
 a.x = b.x + c.x;
 a == b;
 a += b;
+a.i += a.j + a.k;
  return 0;
 }
 )";

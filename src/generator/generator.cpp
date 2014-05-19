@@ -746,7 +746,6 @@ namespace ALSL {
 	}
 	void Generator::gen_stxDoWhile(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
-		genIndent(os);
 		os << "do";
 		genNL(os);
 		genIndent(os);
@@ -764,7 +763,6 @@ namespace ALSL {
 	}
 	void Generator::gen_stxFunc(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
-		genIndent(os);
 		genNextNode(os, *(itr++));// type
 		os << " ";
 		genNextNode(os, *(itr++));// name
@@ -796,7 +794,7 @@ namespace ALSL {
 	}
 	void Generator::gen_stxStruct(std::ostream& os, std::shared_ptr<Node> const node) {
 		auto itr = node->contents.cbegin();
-		genIndent(os);
+		// genIndent(os);
 		os << "struct ";
 		genNextNode(os, *(itr++)); // name
 		genNL(os);
