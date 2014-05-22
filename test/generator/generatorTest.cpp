@@ -187,8 +187,8 @@ TEST(Generator, GeneratorTestCall) {
 	std::string src =
 		R"(
 int main(){
-	mat4 a_;
-	mat4 b;
+	float44 a_;
+	float44 b;
 	mul(a_, b);
 	test(a, b);
 }
@@ -249,7 +249,7 @@ TEST(Generator, Issue3) {
 
 	std::string src =
 		R"(
-mat4 calcMatrix(float4 weights, int4 indexes)
+float44 calcMatrix(float4 weights, int4 indexes)
 {
 return matM[indexes.x] * weights.x +
 matM[indexes.y] * weights.y +

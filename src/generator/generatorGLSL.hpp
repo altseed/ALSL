@@ -39,9 +39,9 @@ namespace ALSL {
 			typedict.emplace("float2", "vec2");
 			typedict.emplace("float3", "vec3");
 			typedict.emplace("float4", "vec4");
-			typedict.emplace("mat2", "mat2");
-			typedict.emplace("mat3", "mat3");
-			typedict.emplace("mat3", "mat3");
+			typedict.emplace("float22", "mat2");
+			typedict.emplace("float33", "mat3");
+			typedict.emplace("float44", "mat4");
 
 			funcdict.emplace("mul", [this](std::ostream& os, std::shared_ptr<Node> const node){
 				auto itr = node->contents.cbegin();
