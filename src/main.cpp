@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 int main(int argc, char* argv[]) {
 
@@ -29,30 +30,39 @@ int main(int argc, char* argv[]) {
 	decltype(ALSL::parseFile(std::string(argv[1]))) ret;
 
 	std::string fname = (!vm.count("output-file")) ? "a" : vm["output-file"].as<std::string>();
+
 	std::ofstream ofsGL(fname + ".fs", std::ofstream::out);
 	std::ofstream ofsHL(fname + ".fx", std::ofstream::out);
 	for(std::string const& src : vm["input-file"].as<std::vector<std::string>>()) {
+
+		boost::system::error_code error;
+		const bool result = boost::filesystem::exists(boost::filesystem::path(src), error);
+		if(!result || error) {
+			std::cerr << "file " << src << " is not exist." << std::endl;
+			continue;
+		}
+
 		try {
 			// ret = ALSL::parseFile(std::string(argv[1]));
 			ret = ALSL::parseFile(src);
 
 
 		} catch(...){
-			std::cout << "unknown error was occured while parsing." << std::endl;
+			std::cerr << src << ": unknown error was occured while parsing." << std::endl;
 		}
 			ALSL::GeneratorGLSL genGL;
 			ALSL::GeneratorHLSL genHL;
 
 			// auto const ret = ALSL::parseFile(vm["input-file"].as<std::string>());
 		if(ret) {
-			std::cout << "Succeessfully translated." << std::endl;
+			std::cout << src << ": succeessfully translated." << std::endl;
 			
 			genGL.generate(ofsGL, *ret);
 			genHL.generate(ofsHL, *ret);
 			
 
 		} else {
-			std::cout << "Failed to translate." << std::endl;
+			std::cerr << src << ": failed to translate." << std::endl;
 
 		}
 	}
