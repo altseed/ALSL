@@ -1,6 +1,7 @@
 #include<gtest/gtest.h>
 #include <string>
 #include <boost/optional.hpp>
+#include <sstream>
 #include "../../src/AST/ast.hpp"
 #include "../../src/parser/parser.hpp"
 #include "../../src/generator/generator.hpp"
@@ -301,6 +302,51 @@ return 0.0;
 
 
 }
+
+
+TEST(Generator, TypeConvert) {
+
+	std::string src =
+		R"(
+void Test()
+{
+	Texture2D texture;
+	float44 mat;
+}
+
+)";
+	std::stringstream resActualHL;
+	std::stringstream resActualGL;
+	std::string resExpectHL = R"(void Test()
+{
+	Texture2D texture;
+	row_major float4x4 mat;
+}
+
+)";
+	std::string resExpectGL = R"(void Test()
+{
+	sampler2D texture;
+	mat4 mat;
+}
+
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	genGL.generate(resActualGL, *res);
+	EXPECT_EQ(resExpectGL, resActualGL.str());
+
+	genHL.generate(resActualHL, *res);
+	EXPECT_EQ(resExpectHL, resActualHL.str());
+
+}
+
+
 
 
 

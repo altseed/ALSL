@@ -42,7 +42,9 @@ namespace ALSL {
 			typedict.emplace("float22", "row_major float2x2");
 			typedict.emplace("float33", "row_major float3x3");
 			typedict.emplace("float44", "row_major float4x4");
+			typedict.emplace("Texture2D", "Texture2D");
 
+			
 			funcdict.emplace("mul", [this](std::ostream& os, std::shared_ptr<Node> const node) {
 				auto itr = node->contents.cbegin();
 				itr++;
