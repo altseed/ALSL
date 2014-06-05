@@ -348,6 +348,51 @@ void Test()
 
 
 
+TEST(Generator, ParamQualify) {
+
+	std::string src =
+		R"(
+int Test(in int a, in int b, out int c, inout int d, int e)
+{
+	c = a + b;
+	d += a + b + c;
+	return a + b + c + d;
+}
+
+)";
+	std::stringstream resActualHL;
+	std::stringstream resActualGL;
+	std::string resExpectHL = R"(int Test(in int a, in int b, out int c, inout int d, int e)
+{
+	c = a + b;
+	d += a + b + c;
+	return a + b + c + d;
+}
+
+)";
+	std::string resExpectGL = R"(int Test(in int a, in int b, out int c, inout int d, int e)
+{
+	c = a + b;
+	d += a + b + c;
+	return a + b + c + d;
+}
+
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	genGL.generate(resActualGL, *res);
+	EXPECT_EQ(resExpectGL, resActualGL.str());
+
+	genHL.generate(resActualHL, *res);
+	EXPECT_EQ(resExpectHL, resActualHL.str());
+
+}
+
 
 
 int main(int argc, char **argv) {

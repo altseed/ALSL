@@ -262,6 +262,21 @@ namespace ALSL {
 		case Tokens::kwdContinue:
 			gen_kwdContinue(os, node);
 			break;
+
+		case Tokens::kwdIn:
+			gen_kwdIn(os, node);
+			break;
+
+		case Tokens::kwdOut:
+			gen_kwdOut(os, node);
+			break;
+
+		case Tokens::kwdInout:
+			gen_kwdInout(os, node);
+			break;
+
+
+
 		case Tokens::preprocessor:
 			gen_preprocessor(os, node);
 			break;
@@ -769,11 +784,49 @@ namespace ALSL {
 		genNextNode(os, *(itr++));// name
 
 		os << '(';
-		if(itr != node->contents.cend() && isNode(*itr) && getNode(*itr).token == Tokens::declVar) {
+		if(itr != node->contents.cend() &&
+		   isNode(*itr) &&
+		   (getNode(*itr).token == Tokens::kwdIn ||
+		   getNode(*itr).token == Tokens::kwdOut ||
+		   getNode(*itr).token == Tokens::kwdInout ||
+		   getNode(*itr).token == Tokens::declVar)
+		) {
+
+			// make parameter qualifiers
+			if(getNode(*itr).token != Tokens::declVar) {
+				genNextNode(os, *(itr++));
+				os << " ";
+				// next token must exists and be a node.
+				if(itr == node->contents.cend() ||
+				   !isNode(*itr) ||
+				   getNode(*itr).token != Tokens::declVar
+				) {
+					return; /* err */
+				}
+			}
 			genNextNode(os, *(itr++));
-			for(; itr != node->contents.cend() && isNode(*itr) && getNode(*itr).token == Tokens::declVar; itr++) {
+
+			for(;
+				itr != node->contents.cend() &&
+				isNode(*itr) &&
+				(getNode(*itr).token == Tokens::kwdIn ||
+				getNode(*itr).token == Tokens::kwdOut ||
+				getNode(*itr).token == Tokens::kwdInout ||
+				getNode(*itr).token == Tokens::declVar);
+			) {
 				os << ", ";
-				genNextNode(os, *itr);
+				if(getNode(*itr).token != Tokens::declVar) {
+					genNextNode(os, *(itr++));
+					os << " ";
+
+					if(itr == node->contents.cend() ||
+					   !isNode(*itr) ||
+					   getNode(*itr).token != Tokens::declVar
+					) {
+						return; /* err */
+					}
+				}
+				genNextNode(os, *(itr++));
 			}
 		}
 		os << ")";
@@ -866,6 +919,18 @@ namespace ALSL {
 	}
 	void Generator::gen_kwdContinue(std::ostream& os, std::shared_ptr<Node> const node) {
 		os << "continue";
+	}
+
+	void Generator::gen_kwdIn(std::ostream& os, std::shared_ptr<Node> const node) {
+		os << "in";
+	}
+
+	void Generator::gen_kwdOut(std::ostream& os, std::shared_ptr<Node> const node) {
+		os << "out";
+	}
+
+	void Generator::gen_kwdInout(std::ostream& os, std::shared_ptr<Node> const node) {
+		os << "inout";
 	}
 
 

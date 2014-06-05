@@ -136,7 +136,7 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 	}
 
 	template<typename localT = qi::unused_type, typename attrT = SpNode()> using rule = qi::rule<itrT, attrT, skpT, localT>;
-	rule<> intLtr, floatLit, doubleLit, paren, ltr, lhs, expr, functionCall, statement, identif, entry, stxIf, stxWhile, stxFor, stxDoWhile, stxStruct, declVar, declConst, declProp, type, kwd, preprocessor;
+	rule<> intLtr, floatLit, doubleLit, paren, ltr, lhs, expr, functionCall, statement, identif, entry, stxIf, stxWhile, stxFor, stxDoWhile, stxStruct, declVar, declConst, declProp, type, kwd, paramQualifier, preprocessor;
 	rule<qi::locals<Tokens>> opUnary, opMulDiv, opAddSub, opBitShift, opLtGt, opEqNeq, opBitAnd, opBitXor, opBitOr, opLogicAnd, opLogicOr, opSelectSub, opAssign, opSeq;
 	rule<qi::locals<SpNode, SpNode>> block, stxFunc;
 
@@ -497,10 +497,22 @@ struct Grammar: qi::grammar<itrT, SpNode(), skpT> {
 		}
 		);
 
+
+		paramQualifier.name("in/out keyword");
+		paramQualifier =
+			qi::lexeme["inout" >> qi::blank][_val = lzMakeNode(val(true), val(Tokens::kwdInout))] |
+			qi::lexeme["in" >> qi::blank][_val = lzMakeNode(val(true), val(Tokens::kwdIn))] |
+			qi::lexeme["out" >> qi::blank][_val = lzMakeNode(val(true), val(Tokens::kwdOut))]
+			
+		;
+
+
 		stxFunc.name("function declaration");
 		stxFunc =
 			(type >> identif >> '(')[_val = lzMakeNode(val(Tokens::stxFunc), _1, _2)] >
-			*(declVar[lzAddNodeContent(_val, val(true), _1)] % ',') >
+			*((-(paramQualifier[lzAddNodeContent(_val, val(true), _1)]) >>
+			declVar[lzAddNodeContent(_val, val(true), _1)]) %
+			',') >
 			')' >
 			block[lzAddNodeContent(_val, val(true), _1)];
 		qi::on_error<qi::fail>(

@@ -115,12 +115,15 @@ namespace ALSL{
 		kwdReturn, // return(exp ret)
 		kwdBreak, // break
 		kwdContinue, // continue
+		kwdIn,
+		kwdOut,
+		kwdInout,
 
 		preprocessor // preprocessor(identif cont)
 
 	};
 	namespace Internal{
-		static const std::string tokens2Str[] = {"none", "intLit", "floatLit", "doubleLit", "strLit", "identif", "paren", "call", "arraySubscript", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAssign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssign", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc", "stxStruct", "type", "declVar", "declConst", "declProp", "kwdReturn", "kwdBreak", "kwdContinue", "preprocessor"};
+		static const std::string tokens2Str[] = {"none", "intLit", "floatLit", "doubleLit", "strLit", "identif", "paren", "call", "arraySubscript", "swizzleOp", "dataMember", "opPos", "opNeg", "opInv", "opNot", "opMult", "opDiv", "opMod", "opAdd", "opSub", "opLsh", "opRsh", "opGt", "opLt", "opGte", "opLte", "opEq", "opNeq", "opBitAnd", "opBitXor", "opBitOr", "opLogicAnd", "opLogicOr", "opSelect", "opAssign", "opAddAssign", "opSubAssign", "opMultAssign", "opDivAssign", "opModAssign", "opLshAssign", "opRshAssign", "opBitAndAssign", "opBitOrAssign", "opBitXorAssign", "opSeq", "seq", "stxIf", "stxWhile", "stxFor", "stxDoWhile", "stxFunc", "stxStruct", "type", "declVar", "declConst", "declProp", "kwdReturn", "kwdBreak", "kwdContinue", "kwdIn", "kwdOut", "kwdInout", "preprocessor"};
 
 	}
 
