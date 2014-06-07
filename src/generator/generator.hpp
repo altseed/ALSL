@@ -116,6 +116,23 @@ namespace ALSL {
 		virtual void gen_preprocessor(std::ostream& os, std::shared_ptr<Node> const node);
 
 
+		virtual void extractFunc(std::string const&& name, std::ostream& os, std::shared_ptr<Node> const node) {
+			auto itr = node->contents.cbegin();
+			auto end = node->contents.cend();
+			itr++; // discard function name
+			os << name << "(";
+			if(itr != end) {
+				genNextNode(os, *(itr++));
+
+				while(itr != end) {
+					os << ", ";
+					genNextNode(os, *(itr++));
+				}
+			}
+			os << ")";
+
+		}
+
 
 	public:
 		virtual void generate(std::ostream& os, std::shared_ptr<Node> node);

@@ -3,8 +3,6 @@
 namespace ALSL {
 	using boost::get;
 
-	// GLSLのfloatにはfサフィクスがつかないので、とる
-	void GeneratorHLSL::gen_floatLit(std::ostream& os, std::shared_ptr<Node> const node) { os << std::showpoint << get<float>(node->contents.back()); }
 
 	// 型名を変換する
 	void GeneratorHLSL::gen_type(std::ostream& os, std::shared_ptr<Node> const node) {

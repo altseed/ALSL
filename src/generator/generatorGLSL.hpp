@@ -54,6 +54,70 @@ namespace ALSL {
 				this->generate(os, boost::get<std::shared_ptr<Node> const>(*itr));
 			});
 
+			funcdict.emplace(
+				"bool2",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("bvec2", os, node);}
+			);
+			funcdict.emplace(
+				"bool3",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("bvec3", os, node); }
+			);
+			funcdict.emplace(
+				"bool4",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("bvec4", os, node); }
+			);
+
+			funcdict.emplace(
+				"int2",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("ivec2", os, node); }
+			);
+			funcdict.emplace(
+				"int3",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("ivec3", os, node); }
+			);
+			funcdict.emplace(
+				"int4",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("ivec4", os, node); }
+			);
+
+			funcdict.emplace(
+				"uint2",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("uvec2", os, node); }
+			);
+			funcdict.emplace(
+				"uint3",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("uvec3", os, node); }
+			);
+			funcdict.emplace(
+				"uint4",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("uvec4", os, node); }
+			);
+
+			funcdict.emplace(
+				"float2",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("vec2", os, node); }
+			);
+			funcdict.emplace(
+				"float3",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("vec3", os, node); }
+			);
+			funcdict.emplace(
+				"float4",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("vec4", os, node); }
+			);
+
+			funcdict.emplace(
+				"float22",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("mat2", os, node); }
+			);
+			funcdict.emplace(
+				"float33",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("mat3", os, node); }
+			);
+			funcdict.emplace(
+				"float44",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("mat4", os, node); }
+			);
 		}
 	};
 

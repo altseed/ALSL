@@ -394,6 +394,86 @@ int Test(in int a, in int b, out int c, inout int d, int e)
 }
 
 
+TEST(Generator, TypeConstructor) {
+
+	std::string src =
+		R"(
+int Test()
+{
+	bool2 b2 = bool2(true, false);
+	bool3 b3 = bool3(true, false, true);
+	bool4 b4 = bool4(true, false, true, true);
+	int2 i2 = int2(1, 2);
+	int2 i3 = int3(1, 2, 3);
+	int4 i4 = int4(1, 2, 3, 4);
+	uint2 u2 = uint2(1, 2);
+	uint2 u3 = uint3(1, 2, 3);
+	uint4 u4 = uint4(1, 2, 3, 4);
+	float2 f2 = float2(1.0f, 1.0f);
+	float3 f3 = float3(1.0f, 1.0f, 0.0f);
+	float3 f4 = float4(1.0f, 1.0f, 0.0f, 2.0f);
+	float22 m2 = float22(f2, f2);
+	float33 m3 = float33(f3, f3, f3);
+	float44 m4 = float44(f4, f4, f4, f4);
+}
+
+)";
+	std::stringstream resActualHL;
+	std::stringstream resActualGL;
+	std::string resExpectHL = R"(int Test()
+{
+	bool2 b2 = bool2(true, false);
+	bool3 b3 = bool3(true, false, true);
+	bool4 b4 = bool4(true, false, true, true);
+	int2 i2 = int2(1, 2);
+	int2 i3 = int3(1, 2, 3);
+	int4 i4 = int4(1, 2, 3, 4);
+	uint2 u2 = uint2(1, 2);
+	uint2 u3 = uint3(1, 2, 3);
+	uint4 u4 = uint4(1, 2, 3, 4);
+	float2 f2 = float2(1.00000f, 1.00000f);
+	float3 f3 = float3(1.00000f, 1.00000f, 0.000000f);
+	float3 f4 = float4(1.00000f, 1.00000f, 0.000000f, 2.00000f);
+	row_major float2x2 m2 = (row_major float2x2)float2x2(f2, f2);
+	row_major float3x3 m3 = (row_major float3x3)float3x3(f3, f3, f3);
+	row_major float4x4 m4 = (row_major float4x4)float4x4(f4, f4, f4, f4);
+}
+
+)";
+	std::string resExpectGL = R"(int Test()
+{
+	bvec2 b2 = bvec2(true, false);
+	bvec3 b3 = bvec3(true, false, true);
+	bvec4 b4 = bvec4(true, false, true, true);
+	ivec2 i2 = ivec2(1, 2);
+	ivec2 i3 = ivec3(1, 2, 3);
+	ivec4 i4 = ivec4(1, 2, 3, 4);
+	uvec2 u2 = uvec2(1, 2);
+	uvec2 u3 = uvec3(1, 2, 3);
+	uvec4 u4 = uvec4(1, 2, 3, 4);
+	vec2 f2 = vec2(1.00000, 1.00000);
+	vec3 f3 = vec3(1.00000, 1.00000, 0.000000);
+	vec3 f4 = vec4(1.00000, 1.00000, 0.000000, 2.00000);
+	mat2 m2 = mat2(f2, f2);
+	mat3 m3 = mat3(f3, f3, f3);
+	mat4 m4 = mat4(f4, f4, f4, f4);
+}
+
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	genGL.generate(resActualGL, *res);
+	EXPECT_EQ(resExpectGL, resActualGL.str());
+
+	genHL.generate(resActualHL, *res);
+	EXPECT_EQ(resExpectHL, resActualHL.str());
+
+}
 
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);

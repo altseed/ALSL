@@ -15,9 +15,6 @@ namespace ALSL {
 	protected:
 		virtual void gen_call(std::ostream& os, std::shared_ptr<Node> const node);
 
-		virtual void gen_floatLit(std::ostream& os, std::shared_ptr<Node> const node);
-
-
 		virtual void gen_type(std::ostream& os, std::shared_ptr<Node> const node);
 
 	public:
@@ -55,7 +52,20 @@ namespace ALSL {
 				this->generate(os, boost::get<std::shared_ptr<Node> const>(*itr));
 				os << ")";
 			});
+			
 
+			funcdict.emplace(
+				"float22",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("(row_major float2x2)float2x2", os, node); }
+			);
+			funcdict.emplace(
+				"float33",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("(row_major float3x3)float3x3", os, node); }
+			);
+			funcdict.emplace(
+				"float44",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("(row_major float4x4)float4x4", os, node); }
+			);
 		}
 	};
 
