@@ -1,8 +1,20 @@
 #include "generator.hpp"
+#include <sstream>
 namespace ALSL {
 
 	using boost::get;
+
 	void Generator::generate(std::ostream& os, std::shared_ptr<Node> node) {
+		std::stringstream predef, body;
+		generateImpl(body, node);
+		printPredefinedFunc(predef);
+
+		os << predef.str() << body.str();;
+
+
+	}
+
+	void Generator::generateImpl(std::ostream& os, std::shared_ptr<Node> node) {
 
 		switch(node->token) {
 		case Tokens::none:

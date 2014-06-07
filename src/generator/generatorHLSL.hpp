@@ -46,10 +46,10 @@ namespace ALSL {
 				auto itr = node->contents.cbegin();
 				itr++;
 				os << "mul(";
-				this->generate(os, boost::get<std::shared_ptr<Node> const>(*itr));
+				genNextNode(os, *itr);
 				os << ", ";
 				itr++;
-				this->generate(os, boost::get<std::shared_ptr<Node> const>(*itr));
+				genNextNode(os, *itr);
 				os << ")";
 			});
 			
@@ -66,6 +66,27 @@ namespace ALSL {
 				"float44",
 				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("(row_major float4x4)float4x4", os, node); }
 			);
+
+			funcdict.emplace(
+				"GetTextureSize",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {
+				this->addPredefinedFunc("GetTextureSize");
+				auto itr = node->contents.cbegin();
+				itr++;
+				os << "GetTextureSize(";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes only 1 argument."); /* err */ }
+				os << ")";
+			}
+			);
+
+			registerPredefinedFunc("GetTextureSize",
+R"(uint2 GetTextureSize(Texture2D texture_){
+	uint width, height;
+	texture_.GetDimension(width, height);
+	return uint2(width, height);
+})");
 		}
 	};
 

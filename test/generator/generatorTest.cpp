@@ -475,6 +475,57 @@ int Test()
 
 }
 
+
+TEST(Generator, GetTextureSize) {
+
+	std::string src =
+		R"(
+uint Test(in Texture2D tex)
+{
+	uint2 size = GetTextureSize(tex);
+	return size.x;
+}
+
+)";
+	std::stringstream resActualHL;
+	std::stringstream resActualGL;
+	std::string resExpectHL = R"(uint2 GetTextureSize(Texture2D texture_){
+	uint width, height;
+	texture_.GetDimension(width, height);
+	return uint2(width, height);
+}
+uint Test(in Texture2D tex)
+{
+	uint2 size = GetTextureSize(tex);
+	return size.x;
+}
+
+)";
+	std::string resExpectGL = R"(uvec2 GetTextureSize(sampler2D texture_){
+	return (uvec2)textureSize(texture_, 0);
+}
+uint Test(in sampler2D tex)
+{
+	uvec2 size = GetTextureSize(tex);
+	return size.x;
+}
+
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	genGL.generate(resActualGL, *res);
+	EXPECT_EQ(resExpectGL, resActualGL.str());
+
+	genHL.generate(resActualHL, *res);
+	EXPECT_EQ(resExpectHL, resActualHL.str());
+
+}
+
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	auto ret = RUN_ALL_TESTS();

@@ -48,10 +48,10 @@ namespace ALSL {
 			funcdict.emplace("mul", [this](std::ostream& os, std::shared_ptr<Node> const node){
 				auto itr = node->contents.cbegin();
 				itr++;
-				this->generate(os, boost::get<std::shared_ptr<Node> const>(*itr));
+				genNextNode(os, *itr);
 				os << " * ";
 				itr++;
-				this->generate(os, boost::get<std::shared_ptr<Node> const>(*itr));
+				genNextNode(os, *itr);
 			});
 
 			funcdict.emplace(
@@ -118,6 +118,26 @@ namespace ALSL {
 				"float44",
 				[this](std::ostream& os, std::shared_ptr<Node> const node) {extractFunc("mat4", os, node); }
 			);
+
+			funcdict.emplace(
+				"GetTextureSize",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {
+					this->addPredefinedFunc("GetTextureSize");
+					auto itr = node->contents.cbegin();
+					itr++;
+					os << "GetTextureSize(";
+					genNextNode(os, *itr);
+					itr++;
+					if(itr != node->contents.cend()) {assert(!"GetTextureSize takes only 1 argument."); /* err */}
+					os << ")";
+				}
+			);
+
+
+			registerPredefinedFunc("GetTextureSize",
+R"(uvec2 GetTextureSize(sampler2D texture_){
+	return (uvec2)textureSize(texture_, 0);
+})");
 		}
 	};
 

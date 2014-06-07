@@ -6,6 +6,8 @@
 #include <memory>
 #include <list>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/get.hpp>
 
@@ -15,10 +17,17 @@
 namespace ALSL {
 
 	class Generator {
+	private:
+		std::unordered_map<std::string, std::string> predefinedFuncDict;
+		std::unordered_set<std::string> registeredPredefinedFuncSet;
+
+
 	protected:
 		int indent = 0;
+
+		virtual void generateImpl(std::ostream& os, std::shared_ptr<Node> node);
 		void genNextNode(std::ostream& os, NodeContent const& node) {
-			generate(os, boost::get<std::shared_ptr<Node> const>(node));
+			generateImpl(os, boost::get<std::shared_ptr<Node> const>(node));
 		}
 		bool isNode(NodeContent const& node) const {return node.which() == NodeContentTypes::NextNode;}
 		Node const& getNode(NodeContent const& node) const{return *(boost::get<std::shared_ptr<Node> const>(node));}
@@ -32,6 +41,24 @@ namespace ALSL {
 
 			}
 		}
+
+		void registerPredefinedFunc(std::string const&& name, std::string const&& body) {
+			if(predefinedFuncDict.find(name) != predefinedFuncDict.cend()) { return; }
+			predefinedFuncDict.insert(std::make_pair(name, body));
+		}
+		void addPredefinedFunc(std::string const&& name) {
+			if(registeredPredefinedFuncSet.find(name) != registeredPredefinedFuncSet.cend()) {return;}
+			registeredPredefinedFuncSet.insert(name);
+		}
+
+		void printPredefinedFunc(std::ostream& os) {
+			for(auto const& e : registeredPredefinedFuncSet) {
+				if(predefinedFuncDict.find(e) == predefinedFuncDict.cend()) { continue; } //err
+				os << predefinedFuncDict.find(e)->second << "\n";
+			}
+
+		}
+
 		virtual void gen_none(std::ostream& os, std::shared_ptr<Node> const node);
 		virtual void gen_intLit(std::ostream& os, std::shared_ptr<Node> const node);
 		virtual void gen_floatLit(std::ostream& os, std::shared_ptr<Node> const node);
