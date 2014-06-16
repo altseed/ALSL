@@ -307,10 +307,10 @@ return 0.0;
 TEST(Generator, TypeConvert) {
 
 	std::string src =
-		R"(
-void Test()
+		R"(void Test()
 {
 	Texture2D texture;
+	Sampler sampler;
 	float44 mat;
 }
 
@@ -320,6 +320,7 @@ void Test()
 	std::string resExpectHL = R"(void Test()
 {
 	Texture2D texture;
+	SamplerState sampler;
 	row_major float4x4 mat;
 }
 
@@ -327,6 +328,7 @@ void Test()
 	std::string resExpectGL = R"(void Test()
 {
 	sampler2D texture;
+	int sampler;
 	mat4 mat;
 }
 
@@ -480,33 +482,33 @@ TEST(Generator, GetTextureSize) {
 
 	std::string src =
 		R"(
-uint Test(in Texture2D tex)
+uint Test(in Texture2D tex, in Sampler samp)
 {
-	uint2 size = GetTextureSize(tex);
+	uint2 size = GetTextureSize(tex, samp);
 	return size.x;
 }
 
 )";
 	std::stringstream resActualHL;
 	std::stringstream resActualGL;
-	std::string resExpectHL = R"(uint2 GetTextureSize(Texture2D texture_){
+	std::string resExpectHL = R"(uint2 GetTextureSize(Texture2D texture_, SamplerState sampler_){
 	uint width, height;
 	texture_.GetDimension(width, height);
 	return uint2(width, height);
 }
-uint Test(in Texture2D tex)
+uint Test(in Texture2D tex, in SamplerState samp)
 {
-	uint2 size = GetTextureSize(tex);
+	uint2 size = GetTextureSize(tex, samp);
 	return size.x;
 }
 
 )";
-	std::string resExpectGL = R"(uvec2 GetTextureSize(sampler2D texture_){
+	std::string resExpectGL = R"(uvec2 GetTextureSize(sampler2D texture_, int sampler_){
 	return (uvec2)textureSize(texture_, 0);
 }
-uint Test(in sampler2D tex)
+uint Test(in sampler2D tex, in int samp)
 {
-	uvec2 size = GetTextureSize(tex);
+	uvec2 size = GetTextureSize(tex, samp);
 	return size.x;
 }
 

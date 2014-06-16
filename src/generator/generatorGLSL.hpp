@@ -43,7 +43,7 @@ namespace ALSL {
 			typedict.emplace("float33", "mat3");
 			typedict.emplace("float44", "mat4");
 			typedict.emplace("Texture2D", "sampler2D");
-
+			typedict.emplace("Sampler", "int");
 
 			funcdict.emplace("mul", [this](std::ostream& os, std::shared_ptr<Node> const node){
 				auto itr = node->contents.cbegin();
@@ -122,21 +122,52 @@ namespace ALSL {
 			funcdict.emplace(
 				"GetTextureSize",
 				[this](std::ostream& os, std::shared_ptr<Node> const node) {
-					this->addPredefinedFunc("GetTextureSize");
-					auto itr = node->contents.cbegin();
-					itr++;
-					os << "GetTextureSize(";
-					genNextNode(os, *itr);
-					itr++;
-					if(itr != node->contents.cend()) {assert(!"GetTextureSize takes only 1 argument."); /* err */}
-					os << ")";
-				}
+				this->addPredefinedFunc("GetTextureSize");
+				auto itr = node->contents.cbegin();
+				itr++;
+				os << "GetTextureSize(";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 2 arguments."); /* err */ }
+				os << ", ";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes 2 arguments."); /* err */ }
+				os << ")";
+			}
 			);
 
+			funcdict.emplace(
+				"SampleTexture",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {
+				this->addPredefinedFunc("SampleTexture");
+				auto itr = node->contents.cbegin();
+				itr++;
+				os << "SampleTexture(";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				os << ", ";
+				genNextNode(os, *itr);
+				itr++;
+				os << ", ";
+				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				os << ", ";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				os << ")";
+			}
+			);
 
 			registerPredefinedFunc("GetTextureSize",
-R"(uvec2 GetTextureSize(sampler2D texture_){
+R"(uvec2 GetTextureSize(sampler2D texture_, int sampler_){
 	return (uvec2)textureSize(texture_, 0);
+})");
+
+			registerPredefinedFunc("SampleTexture",
+R"(vec4 SampleTexture(sampler2D texture_, int sampler_, vec2 uv_){
+	return texture2D(texture_, uv_);
 })");
 		}
 	};

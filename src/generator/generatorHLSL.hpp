@@ -40,6 +40,7 @@ namespace ALSL {
 			typedict.emplace("float33", "row_major float3x3");
 			typedict.emplace("float44", "row_major float4x4");
 			typedict.emplace("Texture2D", "Texture2D");
+			typedict.emplace("Sampler", "SamplerState");
 
 			
 			funcdict.emplace("mul", [this](std::ostream& os, std::shared_ptr<Node> const node) {
@@ -76,17 +77,49 @@ namespace ALSL {
 				os << "GetTextureSize(";
 				genNextNode(os, *itr);
 				itr++;
-				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes only 1 argument."); /* err */ }
+				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 2 arguments."); /* err */ }
+				os << ", ";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes 2 arguments."); /* err */ }
+				os << ")";
+			}
+			);
+
+			funcdict.emplace(
+				"SampleTexture",
+				[this](std::ostream& os, std::shared_ptr<Node> const node) {
+				this->addPredefinedFunc("SampleTexture");
+				auto itr = node->contents.cbegin();
+				itr++;
+				os << "SampleTexture(";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				os << ", ";
+				genNextNode(os, *itr);
+				itr++;
+				os << ", ";
+				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				os << ", ";
+				genNextNode(os, *itr);
+				itr++;
+				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
 				os << ")";
 			}
 			);
 
 			registerPredefinedFunc("GetTextureSize",
-R"(uint2 GetTextureSize(Texture2D texture_){
+R"(uint2 GetTextureSize(Texture2D texture_, SamplerState sampler_){
 	uint width, height;
 	texture_.GetDimension(width, height);
 	return uint2(width, height);
 })");
+			registerPredefinedFunc("SampleTexture",
+R"(float4 SampleTexture(Texture2D texture_, SamplerState sampler_, float2 uv_: TEXCOORD): COLOR {
+	return texture_.Sample(sampler_, uv_);
+})");
+
 		}
 	};
 
