@@ -582,6 +582,55 @@ float4 CalcColor(float2 uv)
 
 }
 
+
+TEST(Generator, SampleTexture) {
+
+	std::string src =
+		R"(
+float Test(in Texture2D tex, in Sampler samp, in float2 uv)
+{
+	float r = GetTextureSize(tex, samp, uv).r;
+	return r;
+}
+
+)";
+	std::stringstream resActualHL;
+	std::stringstream resActualGL;
+	std::string resExpectHL = R"(float4 SampleTexture(Texture2D texture_, SamplerState sampler_, float2 uv_: TEXCOORD): COLOR {
+	return texture_.Sample(sampler_, uv_);
+}
+float Test(in Texture2D tex, in SamplerState samp, in float2 uv)
+{
+	float r = GetTextureSize(tex, samp, uv).r;
+	return r;
+}
+
+)";
+	std::string resExpectGL = R"(vec4 SampleTexture(sampler2D texture_, int sampler_, vec2 uv_){
+	return texture2D(texture_, uv_);
+}
+float Test(in Texture2D tex, in SamplerState samp, in float2 uv)
+{
+	float r = GetTextureSize(tex, samp, uv).r;
+	return r;
+}
+
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	genGL.generate(resActualGL, *res);
+	EXPECT_EQ(resExpectGL, resActualGL.str());
+
+	genHL.generate(resActualHL, *res);
+	EXPECT_EQ(resExpectHL, resActualHL.str());
+
+}
+
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	auto ret = RUN_ALL_TESTS();
