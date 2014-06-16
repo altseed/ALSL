@@ -528,6 +528,60 @@ uint Test(in sampler2D tex, in int samp)
 
 }
 
+
+TEST(Generator, Issue13) {
+
+	std::string src =
+		R"(// float2 GetTextureSize();
+// float4 GetColor(float2 uv);
+// float4 g_weight;
+
+float4 CalcColor(float2 uv)
+{
+	float2 size = GetTextureSize();
+
+#if BLUR_X
+	float2 shift_p = float2(0.5/size.x, 0.5/size.y);
+	float2 shift_m = float2(-0.5/size.x, 0.5/size.y);
+	float2 adder = float2(2.0f/size.x,0.0);
+#endif
+
+#if BLUR_Y
+	float2 shift_p = float2(0.5/size.x, 0.5/size.y);
+	float2 shift_m = float2(0.5/size.x, -0.5/size.y);
+	float2 adder = float2(0.0,2.0/size.y);
+#endif
+
+	float4 sum = float4(0.0,0.0,0.0,0.0);
+
+	sum += g_weight.x * GetColor(uv+shift_p+adder*0.0);
+	sum += g_weight.x * GetColor(uv+shift_m-adder*0.0);
+
+	sum += g_weight.y * GetColor(uv+shift_p+adder*1.0);
+	sum += g_weight.y * GetColor(uv+shift_m-adder*1.0);
+
+	sum += g_weight.z * GetColor(uv+shift_p+adder*2.0);
+	sum += g_weight.z * GetColor(uv+shift_m-adder*2.0);
+
+	sum += g_weight.w * GetColor(uv+shift_p+adder*3.0);
+	sum += g_weight.w * GetColor(uv+shift_m-adder*3.0);
+
+	return sum;
+}
+)";
+
+	auto res = ALSL::parse("file.alsl", src);
+	EXPECT_TRUE(res);
+	ALSL::Generator gen;
+	ALSL::GeneratorGLSL genGL;
+	ALSL::GeneratorHLSL genHL;
+	// std::cout << **res << std::endl << "------------" << std::endl;
+	EXPECT_DEATH(genGL.generate(std::cout, *res), ".*");
+	EXPECT_DEATH(genHL.generate(std::cout, *res), ".*");
+
+
+}
+
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	auto ret = RUN_ALL_TESTS();

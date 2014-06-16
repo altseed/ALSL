@@ -2,6 +2,8 @@
 #ifndef ALSL_GENERATOR_GLSL_HPP
 #define ALSL_GENERATOR_GLSL_HPP
 #include "generator.hpp"
+#include <cstdlib>
+#include <iostream>
 #include <functional>
 #include <unordered_map>
 namespace ALSL {
@@ -125,14 +127,17 @@ namespace ALSL {
 				this->addPredefinedFunc("GetTextureSize");
 				auto itr = node->contents.cbegin();
 				itr++;
+				if(itr == node->contents.cend()) {
+					std::cerr << "Error: GetTextureSize takes 2 arguments." << std::endl; std::exit(1); // err
+				}
 				os << "GetTextureSize(";
 				genNextNode(os, *itr);
 				itr++;
-				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 2 arguments."); /* err */ }
+				if(itr == node->contents.cend()) { std::cerr << "Error: GetTextureSize takes 2 arguments." << std::endl; std::exit(1); /* err */ }
 				os << ", ";
 				genNextNode(os, *itr);
 				itr++;
-				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes 2 arguments."); /* err */ }
+				if(itr != node->contents.cend()) { std::cerr << "Error: GetTextureSize takes 2 arguments." << std::endl; std::exit(1); /* err */ }
 				os << ")";
 			}
 			);
@@ -143,19 +148,22 @@ namespace ALSL {
 				this->addPredefinedFunc("SampleTexture");
 				auto itr = node->contents.cbegin();
 				itr++;
+				if(itr == node->contents.cend()) {
+					std::cerr << "Error: SampleTexture takes 2 arguments." << std::endl; std::exit(1); // err
+				}
 				os << "SampleTexture(";
 				genNextNode(os, *itr);
 				itr++;
-				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				if(itr == node->contents.cend()) { std::cerr << "Error: SampleTexture takes 3 arguments." << std::endl; std::exit(1); /* err */ }
 				os << ", ";
 				genNextNode(os, *itr);
 				itr++;
 				os << ", ";
-				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				if(itr == node->contents.cend()) { std::cerr << "Error: SampleTexture takes 3 arguments." << std::endl; std::exit(1); /* err */ }
 				os << ", ";
 				genNextNode(os, *itr);
 				itr++;
-				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
+				if(itr != node->contents.cend()) { std::cerr << "Error: SampleTexture takes 3 arguments." << std::endl; std::exit(1); /* err */ }
 				os << ")";
 			}
 			);
