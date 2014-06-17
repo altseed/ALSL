@@ -124,7 +124,7 @@ R"(uint2 GetTextureSize(Texture2D texture_, SamplerState sampler_){
 	return uint2(width, height);
 })");
 			registerPredefinedFunc("SampleTexture",
-R"(float4 SampleTexture(Texture2D texture_, SamplerState sampler_, float2 uv_: TEXCOORD): COLOR {
+R"(float4 SampleTexture(Texture2D texture_, SamplerState sampler_, float2 uv_) {
 	return texture_.Sample(sampler_, uv_);
 })");
 
