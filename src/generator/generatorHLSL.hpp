@@ -109,7 +109,6 @@ namespace ALSL {
 				itr++;
 				os << ", ";
 				if(itr == node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }
-				os << ", ";
 				genNextNode(os, *itr);
 				itr++;
 				if(itr != node->contents.cend()) { assert(!"GetTextureSize takes 3 arguments."); /* err */ }

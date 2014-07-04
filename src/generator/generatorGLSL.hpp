@@ -160,7 +160,6 @@ namespace ALSL {
 				itr++;
 				os << ", ";
 				if(itr == node->contents.cend()) { std::cerr << "Error: SampleTexture takes 3 arguments." << std::endl; std::exit(1); /* err */ }
-				os << ", ";
 				genNextNode(os, *itr);
 				itr++;
 				if(itr != node->contents.cend()) { std::cerr << "Error: SampleTexture takes 3 arguments." << std::endl; std::exit(1); /* err */ }
